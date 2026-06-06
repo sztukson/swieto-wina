@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Test UX — Święto Wina</title>
+<style>
+:root{
+  --bg:#0d0b10;--s1:#171220;--s2:#1e1829;--s3:#27213a;--dim:#3a3250;
+  --wine:#8b2030;--wine2:#b02a42;--gold:#c8a84b;--text:#ede5d8;--muted:#7a6f82;
+  --border:rgba(200,168,75,.13);--green:#27ae60;--r:14px;--rsm:9px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh}
+#hdr{background:linear-gradient(180deg,var(--s2),var(--s1));border-bottom:1px solid var(--border);padding:calc(8px + env(safe-area-inset-top)) 12px 8px;flex-shrink:0}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{font-family:Georgia,serif;font-size:16px;color:var(--gold);font-weight:bold}
+.counter{font-size:11px;color:var(--muted);text-align:right;line-height:1.3}
+.counter b{color:var(--gold);font-size:13px}
+.seg{display:flex;gap:4px;margin-top:8px;background:var(--s3);border-radius:11px;padding:3px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:700;padding:8px 4px;border-radius:8px;cursor:pointer;transition:all .15s}
+.seg button.on{background:var(--wine);color:#fff}
+.navchips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.navchip{border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
+.navchip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.12)}
+#cnt{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 30px}
+.hint{font-size:11px;color:var(--muted);text-align:center;padding:8px;font-style:italic}
+/* ── pole szukania ── */
+#searchbar{margin-bottom:10px}
+#searchbar input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:15px;padding:12px;outline:none}
+/* ── chipsy kategorii ── */
+#catchips{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+#catchips button{white-space:nowrap;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;cursor:pointer}
+#catchips button.on{background:var(--gold);color:#1a1410;border-color:var(--gold)}
+/* ── pasek ulubionych ── */
+#favbar{margin-bottom:12px}
+.fav-title{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.fav-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.fav-it{flex:0 0 auto;background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--gold2,rgba(200,168,75,.3));border-radius:12px;padding:10px 12px;min-width:110px;cursor:pointer;transition:transform .1s}
+.fav-it:active{transform:scale(.94)}
+.fav-it .fn{font-family:Georgia,serif;font-size:13px;color:var(--gold);font-weight:bold}
+.fav-it .fb{display:flex;gap:6px;margin-top:7px}
+.fav-it .fb span{flex:1;text-align:center;background:var(--wine);color:#fff;border-radius:7px;padding:7px 0;font-size:13px;font-weight:700}
+/* ── sekcja kategorii ── */
+.sec{margin-bottom:8px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:10px;cursor:pointer}
+.sec-h .st{font-family:Georgia,serif;font-size:14px;color:var(--gold);text-transform:uppercase;letter-spacing:.5px}
+.sec-h .sa{color:var(--muted)}
+.sec-body{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+/* ── MODEL A: szybka sprzedaż z listy ── */
+.row{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.row-top{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+.row-name{flex:1;min-width:0}
+.row-name .rn{font-family:Georgia,serif;font-size:14px;color:var(--text)}
+.row-name .rs{font-size:10px;color:var(--muted);margin-top:2px}
+.row-stock{text-align:right}
+.row-stock .rv{font-size:20px;font-weight:700;line-height:1}
+.row-stock .rl{font-size:9px;color:var(--muted)}
+.row-quick{display:flex;gap:6px;padding:0 12px 11px}
+.qbtn{flex:1;border:none;border-radius:9px;height:48px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .08s}
+.qbtn:active{transform:scale(.9)}
+.qdg{background:var(--wine);color:#fff}
+.qbt{background:var(--s3);color:var(--gold);border:1px solid var(--gold2,rgba(200,168,75,.35))}
+.row-detail{border-top:1px solid var(--border);padding:12px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.02)}
+/* ── MODEL C: kafelki ── */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:520px){.grid{grid-template-columns:1fr 1fr 1fr}}
+.tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none}
+.tile:active{transform:scale(.93);border-color:var(--wine)}
+.tile.flash{animation:fl .4s}
+@keyframes fl{0%{background:var(--wine)}100%{background:var(--s1)}}
+.tile .tn{font-family:Georgia,serif;font-size:14px;color:var(--gold);font-weight:bold;line-height:1.15}
+.tile .tdg{font-size:20px;font-weight:700;margin-top:8px}
+.tile .ts{font-size:10px;color:var(--muted);margin-top:3px}
+/* ── MODEL B: bottom sheet ── */
+.list-simple{display:flex;flex-direction:column;gap:6px}
+.ls-it{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:13px 14px;cursor:pointer}
+.ls-it:active{background:var(--s2)}
+.ls-it .lsn{font-family:Georgia,serif;font-size:14px}
+.ls-it .lss{font-size:11px;color:var(--muted)}
+#sheet{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;background:rgba(0,0,0,.5)}
+#sheet.show{display:flex}
+.sheet-c{background:var(--s1);border-top:2px solid var(--wine);border-radius:20px 20px 0 0;width:100%;max-width:560px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom));animation:up .2s}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-name{font-family:Georgia,serif;font-size:18px;color:var(--gold);text-align:center}
+.sheet-sub{font-size:12px;color:var(--muted);text-align:center;margin:2px 0 14px}
+.sheet-ag{margin-bottom:12px}
+.sheet-lbl{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.sheet-row{display:flex;gap:8px}
+.sheet-row .minus{flex:0 0 56px;background:var(--s3);border:1px solid var(--dim);color:var(--muted);border-radius:10px;height:58px;font-size:24px;cursor:pointer}
+.sheet-row .plus{flex:1;background:var(--wine);border:none;color:#fff;border-radius:10px;height:58px;font-size:15px;font-weight:700;cursor:pointer}
+.sheet-row .plus:active,.sheet-row .minus:active{opacity:.7}
+.sheet-close{width:100%;margin-top:6px;background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer}
+#toast{position:fixed;top:46%;left:50%;transform:translate(-50%,-50%) scale(.9);background:var(--s3);border:1px solid var(--gold2,rgba(200,168,75,.5));color:var(--text);padding:11px 22px;border-radius:30px;font-size:14px;font-weight:700;z-index:200;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hdr">
+    <div class="htop">
+      <div class="logo">🍷 Test UX</div>
+      <div class="counter">Dziś: <b id="c-dg">0</b>🥂 <b id="c-bt">0</b>🍾<br><b id="c-rev">0</b> zł <span onclick="resetCnt()" style="color:var(--muted);cursor:pointer;text-decoration:underline">reset</span></div>
+    </div>
+    <div class="seg">
+      <button id="m-list" class="on" onclick="setModel('list')">📋 Lista</button>
+      <button id="m-sheet" onclick="setModel('sheet')">⬆️ Panel z dołu</button>
+      <button id="m-grid" onclick="setModel('grid')">▦ Kafelki</button>
+    </div>
+    <div class="navchips" id="navchips">
+      <button class="navchip" id="n-fav" onclick="toggleNav('fav')">⭐ Ulubione</button>
+      <button class="navchip" id="n-chips" onclick="toggleNav('chips')">🏷️ Chipsy kategorii</button>
+      <button class="navchip" id="n-search" onclick="toggleNav('search')">🔍 Szukanie</button>
+    </div>
+  </div>
+  <div id="cnt"></div>
+</div>
+
+<!-- Bottom sheet (model B) -->
+<div id="sheet" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-c" id="sheet-c"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── Dane testowe ──
+var WINES = [
+  {id:'w1', name:'Cabernet Sauvignon', type:'czerwone', dgPrice:12, btPrice:55, stock:12, dg:0, bt:0},
+  {id:'w2', name:'Merlot', type:'czerwone', dgPrice:12, btPrice:50, stock:5, dg:0, bt:0},
+  {id:'w3', name:'Pinot Noir', type:'czerwone', dgPrice:14, btPrice:60, stock:8, dg:0, bt:0},
+  {id:'w4', name:'Chardonnay', type:'białe', dgPrice:11, btPrice:48, stock:10, dg:0, bt:0},
+  {id:'w5', name:'Riesling', type:'białe', dgPrice:11, btPrice:45, stock:9, dg:0, bt:0},
+  {id:'w6', name:'Sauvignon Blanc', type:'białe', dgPrice:12, btPrice:50, stock:7, dg:0, bt:0},
+  {id:'w7', name:'Rosé Provence', type:'różowe', dgPrice:13, btPrice:52, stock:6, dg:0, bt:0},
+  {id:'w8', name:'Zinfandel Rosé', type:'różowe', dgPrice:12, btPrice:48, stock:4, dg:0, bt:0}
+];
+var CATS = ['czerwone','białe','różowe'];
+var CAT_ICON = {czerwone:'🍷', 'białe':'🥂', różowe:'🌸'};
+var MODEL = 'list';
+var NAV = {fav:false, chips:false, search:false};
+var ACTIVE_CAT = 'all';
+var SEARCH = '';
+var SEC_OPEN = {czerwone:true, 'białe':false, różowe:false};
+var SOLD = {dg:0, bt:0, rev:0};
+
+function buzz(ms){ if(navigator.vibrate) navigator.vibrate(ms||14); }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},1100); }
+function fmt(n){ return n.toLocaleString('pl-PL'); }
+
+function sell(id, kind){
+  var w = WINES.find(function(x){return x.id===id;});
+  if(!w) return;
+  if(kind==='dg'){ w.dg++; SOLD.dg++; SOLD.rev += w.dgPrice; }
+  else { if(w.stock<=0){ toast('⚠️ Brak butelek!'); buzz([30,40,30]); return; } w.stock--; w.bt++; SOLD.bt++; SOLD.rev += w.btPrice; }
+  buzz(14);
+  toast((kind==='dg'?'🥂 ':'🍾 ')+w.name);
+  updCounter();
+  render();
+}
+function updCounter(){
+  document.getElementById('c-dg').textContent = SOLD.dg;
+  document.getElementById('c-bt').textContent = SOLD.bt;
+  document.getElementById('c-rev').textContent = fmt(SOLD.rev);
+}
+function resetCnt(){ SOLD={dg:0,bt:0,rev:0}; WINES.forEach(function(w){w.dg=0;w.bt=0;}); updCounter(); render(); toast('↩️ Reset'); }
+
+function setModel(m){ MODEL=m; ['list','sheet','grid'].forEach(function(x){document.getElementById('m-'+x).classList.toggle('on',x===m);}); buzz(8); render(); }
+function toggleNav(k){ NAV[k]=!NAV[k]; document.getElementById('n-'+k).classList.toggle('on',NAV[k]); buzz(8); render(); }
+function toggleSec(c){ SEC_OPEN[c]=!SEC_OPEN[c]; render(); }
+function setCat(c){ ACTIVE_CAT=c; render(); }
+
+function filtered(){
+  return WINES.filter(function(w){
+    if(SEARCH && w.name.toLowerCase().indexOf(SEARCH.toLowerCase())===-1) return false;
+    if(NAV.chips && ACTIVE_CAT!=='all' && w.type!==ACTIVE_CAT) return false;
+    return true;
+  });
+}
+
+function render(){
+  var h='';
+  // Szukanie
+  if(NAV.search){
+    h+='<div id="searchbar"><input type="text" placeholder="🔍 Szukaj wina..." value="'+SEARCH+'" oninput="SEARCH=this.value;renderKeepFocus()"></div>';
+  }
+  // Chipsy kategorii
+  if(NAV.chips){
+    h+='<div id="catchips"><button class="'+(ACTIVE_CAT==='all'?'on':'')+'" onclick="setCat(\'all\')">Wszystkie</button>';
+    CATS.forEach(function(c){ h+='<button class="'+(ACTIVE_CAT===c?'on':'')+'" onclick="setCat(\''+c+'\')">'+CAT_ICON[c]+' '+c+'</button>'; });
+    h+='</div>';
+  }
+  // Pasek ulubionych (TOP wg sprzedaży degustacji, min 3)
+  if(NAV.fav){
+    var fav = WINES.slice().sort(function(a,b){return (b.dg+b.bt)-(a.dg+a.bt);}).slice(0,4);
+    h+='<div id="favbar"><div class="fav-title">⭐ Najczęściej sprzedawane</div><div class="fav-row">';
+    fav.forEach(function(w){
+      h+='<div class="fav-it"><div class="fn">'+w.name+'</div><div class="fb"><span onclick="event.stopPropagation();sell(\''+w.id+'\',\'dg\')">+🥂</span><span onclick="event.stopPropagation();sell(\''+w.id+'\',\'bt\')">+🍾</span></div></div>';
+    });
+    h+='</div></div>';
+  }
+
+  var list = filtered();
+
+  if(MODEL==='grid'){
+    h+='<div class="hint">Tap = degustacja · przytrzymaj = butelka</div>';
+    h+='<div class="grid">';
+    list.forEach(function(w){
+      h+='<div class="tile" id="tile-'+w.id+'" data-id="'+w.id+'">'
+        +'<div class="tn">'+w.name+'</div>'
+        +'<div class="tdg">🥂 '+w.dg+'</div>'
+        +'<div class="ts">🍾 '+w.bt+' · '+w.stock+' but.</div></div>';
+    });
+    h+='</div>';
+    document.getElementById('cnt').innerHTML=h;
+    bindTiles();
+    return;
+  }
+
+  if(MODEL==='sheet'){
+    h+='<div class="hint">Dotknij wino → panel sprzedaży wysunie się z dołu</div>';
+    h+='<div class="list-simple">';
+    list.forEach(function(w){
+      h+='<div class="ls-it" onclick="openSheet(\''+w.id+'\')"><div><div class="lsn">'+w.name+'</div><div class="lss">🥂 '+w.dg+' · 🍾 '+w.bt+'</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:700">'+w.stock+'</div><div style="font-size:9px;color:var(--muted)">but.</div></div></div>';
+    });
+    h+='</div>';
+    document.getElementById('cnt').innerHTML=h;
+    return;
+  }
+
+  // MODEL LIST — szybka sprzedaż z przyciskami na wierszu
+  h+='<div class="hint">+🥂 / +🍾 = sprzedaż od razu · dotknij nazwę = szczegóły</div>';
+  if(NAV.chips || SEARCH){
+    // płaska lista (filtr aktywny) — bez sekcji
+    list.forEach(function(w){ h+=rowHtml(w); });
+  } else {
+    CATS.forEach(function(c){
+      var ws = list.filter(function(w){return w.type===c;});
+      if(!ws.length) return;
+      var open = SEC_OPEN[c];
+      h+='<div class="sec"><div class="sec-h" onclick="toggleSec(\''+c+'\')"><span class="st">'+CAT_ICON[c]+' '+c+' ('+ws.length+')</span><span class="sa">'+(open?'▼':'▶')+'</span></div>';
+      if(open){ h+='<div class="sec-body">'; ws.forEach(function(w){ h+=rowHtml(w); }); h+='</div>'; }
+      h+='</div>';
+    });
+  }
+  document.getElementById('cnt').innerHTML=h;
+}
+
+function rowHtml(w){
+  var open = !!w._open;
+  var h='<div class="row">';
+  h+='<div class="row-top" onclick="toggleRow(\''+w.id+'\')">'
+    +'<div class="row-name"><div class="rn">'+w.name+'</div><div class="rs">🥂 '+w.dg+'  🍾 '+w.bt+'  · '+w.dgPrice+'/'+w.btPrice+' zł</div></div>'
+    +'<div class="row-stock"><div class="rv">'+w.stock+'</div><div class="rl">but.</div></div>'
+    +'<span style="color:var(--muted);opacity:.5">'+(open?'▼':'▶')+'</span></div>';
+  h+='<div class="row-quick">'
+    +'<button class="qbtn qdg" onclick="sell(\''+w.id+'\',\'dg\')">+ 🥂 Degustacja</button>'
+    +'<button class="qbtn qbt" onclick="sell(\''+w.id+'\',\'bt\')">+ 🍾 Butelka</button></div>';
+  if(open){
+    h+='<div class="row-detail">Cena degustacji: <b>'+w.dgPrice+' zł</b> · butelka: <b>'+w.btPrice+' zł</b><br>Stan: <b>'+w.stock+'</b> butelek · sprzedano dziś: 🥂'+w.dg+' / 🍾'+w.bt+'<br><span style="color:var(--gold)">Tu byłyby: rabat, ×N, historia butelek, kieliszki…</span></div>';
+  }
+  h+='</div>';
+  return h;
+}
+function toggleRow(id){ var w=WINES.find(function(x){return x.id===id;}); w._open=!w._open; render(); }
+
+function renderKeepFocus(){
+  render();
+  var inp=document.querySelector('#searchbar input');
+  if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); }
+}
+
+// ── Model B: bottom sheet ──
+function openSheet(id){
+  var w=WINES.find(function(x){return x.id===id;});
+  buzz(8);
+  var h='<div class="sheet-name">'+w.name+'</div><div class="sheet-sub">'+w.stock+' butelek w zapasie · sprzedano 🥂'+w.dg+' / 🍾'+w.bt+'</div>';
+  h+='<div class="sheet-ag"><div class="sheet-lbl">🥂 Degustacja — '+w.dgPrice+' zł</div><div class="sheet-row"><button class="minus" onclick="sheetSell(\''+id+'\',\'dg\',-1)">−</button><button class="plus" onclick="sheetSell(\''+id+'\',\'dg\',1)">+ Degustacja</button></div></div>';
+  h+='<div class="sheet-ag"><div class="sheet-lbl">🍾 Butelka — '+w.btPrice+' zł</div><div class="sheet-row"><button class="minus" onclick="sheetSell(\''+id+'\',\'bt\',-1)">−</button><button class="plus" onclick="sheetSell(\''+id+'\',\'bt\',1)">+ Butelka</button></div></div>';
+  h+='<button class="sheet-close" onclick="closeSheet()">Zamknij</button>';
+  document.getElementById('sheet-c').innerHTML=h;
+  document.getElementById('sheet').classList.add('show');
+}
+function closeSheet(){ document.getElementById('sheet').classList.remove('show'); }
+function sheetSell(id,kind,dir){
+  var w=WINES.find(function(x){return x.id===id;});
+  if(dir>0){ sell(id,kind); }
+  else { // korekta
+    if(kind==='dg'&&w.dg>0){ w.dg--; SOLD.dg--; SOLD.rev-=w.dgPrice; }
+    else if(kind==='bt'&&w.bt>0){ w.bt--; w.stock++; SOLD.bt--; SOLD.rev-=w.btPrice; }
+    buzz(10); updCounter();
+  }
+  openSheet(id); // odśwież panel
+}
+
+// ── Model C: kafelki — tap=dg, long-press=bt ──
+function bindTiles(){
+  document.querySelectorAll('.tile').forEach(function(t){
+    var id=t.dataset.id, timer=null, longed=false;
+    function start(e){ longed=false; timer=setTimeout(function(){ longed=true; buzz([20,30,20]); sell(id,'bt'); var el=document.getElementById('tile-'+id); if(el){el.classList.add('flash');setTimeout(function(){el.classList.remove('flash');},400);} }, 480); }
+    function end(e){ if(timer)clearTimeout(timer); if(!longed){ sell(id,'dg'); var el=document.getElementById('tile-'+id); if(el){el.classList.add('flash');setTimeout(function(){el.classList.remove('flash');},400);} } }
+    function cancel(){ if(timer)clearTimeout(timer); longed=true; }
+    t.addEventListener('touchstart',start,{passive:true});
+    t.addEventListener('touchend',end);
+    t.addEventListener('touchmove',cancel,{passive:true});
+    // fallback desktop
+    t.addEventListener('mousedown',start); t.addEventListener('mouseup',end); t.addEventListener('mouseleave',cancel);
+  });
+}
+
+render();
+updCounter();
+</script>
+</body>
+</html>
