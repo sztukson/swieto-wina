@@ -1,6 +1,6 @@
 // Święto Wina — Service Worker (PWA offline)
 // Podbij wersję przy każdej aktualizacji, żeby wymusić odświeżenie cache.
-const CACHE = 'swieto-wina-v8';
+const CACHE = 'swieto-wina-v9';
 const SHELL = [
   './',
   'index.html',
@@ -9,6 +9,11 @@ const SHELL = [
   'icon-512.png',
   'apple-touch-icon.png'
 ];
+
+// Pozwól stronie wymusić natychmiastową aktywację nowej wersji
+self.addEventListener('message', (e) => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
+});
 
 // Instalacja — wgraj „szkielet" aplikacji do cache
 self.addEventListener('install', (e) => {

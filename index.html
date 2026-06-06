@@ -1813,7 +1813,7 @@ function renderHome() {
     });
     html += '</div>';
   }
-  html += '<div style="text-align:center;color:var(--muted);font-size:10px;opacity:.45;padding:14px 0 4px">🍷 Święto Wina · wersja 17</div>';
+  html += '<div style="text-align:center;color:var(--muted);font-size:10px;opacity:.45;padding:14px 0 4px">🍷 Święto Wina · wersja 18</div>';
   html += '</div>';
   document.getElementById('cnt').innerHTML = html;
 }
@@ -3249,7 +3249,7 @@ function scrollAI() {
 // ─────────────────────────────────────────────
 function renderBaza() {
   var h = '<div class="st-sec fade">';
-  h += '<div style="font-family:Georgia,serif;font-size:18px;color:var(--gold);margin-bottom:10px">📒 Baza win i historia cen</div>';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px"><div style="font-family:Georgia,serif;font-size:18px;color:var(--gold)">📒 Baza win</div><button onclick="openAddWine()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Dodaj wino</button></div>';
   var types = ['białe','różowe','czerwone'];
   var typeLabel = {białe:'🟡 Białe', różowe:'🌸 Różowe', czerwone:'🔴 Czerwone'};
   var typeAccent = {białe:'var(--gold)', różowe:'#d4558a', czerwone:'var(--wine2)'};
@@ -3266,6 +3266,7 @@ function renderBaza() {
       h += '<div style="text-align:right">';
       h += '<div style="font-size:20px;font-weight:900;color:' + typeAccent[type] + '">' + w.pb + ' zł</div>';
       h += '<button onclick="changePrice(\'' + w.id + '\')" style="font-size:10px;background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:6px;padding:3px 8px;cursor:pointer;font-weight:700;margin-top:3px">✏️ Zmień cenę</button>';
+      h += '<button onclick="deleteWine(\'' + w.id + '\')" style="font-size:10px;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:var(--red);border-radius:6px;padding:3px 7px;cursor:pointer;font-weight:700;margin-top:3px;margin-left:4px">🗑</button>';
       h += '</div></div>';
       // Historia sprzedaży
       h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">';
@@ -3288,6 +3289,49 @@ function renderBaza() {
   });
   h += '</div>';
   document.getElementById('cnt').innerHTML = h;
+}
+
+// ── Dodawanie / usuwanie win ──
+function openAddWine(){
+  var h = '<div id="addwine-m" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:18px" onclick="if(event.target.id===\'addwine-m\')this.remove()">';
+  h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow-y:auto">';
+  h += '<div style="font-family:Georgia,serif;font-size:17px;color:var(--gold)">🍷 Dodaj wino</div>';
+  h += '<label style="font-size:12px;color:var(--muted)">Nazwa<input id="aw-name" type="text" placeholder="np. Riesling 2023" style="width:100%;margin-top:4px;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:10px;font-size:14px"></label>';
+  h += '<label style="font-size:12px;color:var(--muted)">Kolor<select id="aw-type" style="width:100%;margin-top:4px;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:10px;font-size:14px"><option value="czerwone">🔴 Czerwone</option><option value="białe">🟡 Białe</option><option value="różowe">🌸 Różowe</option></select></label>';
+  h += '<div style="display:flex;gap:8px">';
+  h += '<label style="flex:1;font-size:12px;color:var(--muted)">Cena butelki (zł)<input id="aw-pb" type="number" step="0.01" inputmode="decimal" placeholder="0" style="width:100%;margin-top:4px;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:10px;font-size:15px;font-weight:700;text-align:center"></label>';
+  h += '<label style="flex:1;font-size:12px;color:var(--muted)">Butelki startowe<input id="aw-ib" type="number" inputmode="numeric" placeholder="0" style="width:100%;margin-top:4px;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:10px;font-size:15px;font-weight:700;text-align:center"></label>';
+  h += '</div>';
+  h += '<div style="display:flex;gap:8px;margin-top:4px">';
+  h += '<button onclick="document.getElementById(\'addwine-m\').remove()" style="flex:1;background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:12px;font-size:13px;font-weight:700;cursor:pointer">Anuluj</button>';
+  h += '<button onclick="addWine()" style="flex:2;background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:12px;font-size:13px;font-weight:700;cursor:pointer">✓ Dodaj wino</button>';
+  h += '</div></div></div>';
+  document.body.insertAdjacentHTML('beforeend', h);
+  setTimeout(function(){ var el=document.getElementById('aw-name'); if(el) el.focus(); }, 50);
+}
+function addWine(){
+  var name=(document.getElementById('aw-name').value||'').trim();
+  var type=document.getElementById('aw-type').value;
+  var pb=parseFloat((document.getElementById('aw-pb').value||'').replace(',','.'))||0;
+  var ib=parseInt(document.getElementById('aw-ib').value)||0;
+  if(!name){ toast('⚠️ Podaj nazwę wina'); return; }
+  var w={id:uid(), name:name, type:type, pb:pb, ib:ib, ml:ib*BOTTLE_ML, dg:0, bt:0, rev:0, closedBottles:[], dgAtLastClose:0, priceHistory:[{date:new Date().toISOString().slice(0,10), price:pb}]};
+  S.wines.push(w);
+  save();
+  if(typeof sbPushWines==='function') sbPushWines();
+  var m=document.getElementById('addwine-m'); if(m) m.remove();
+  toast('🍷 Dodano: '+name);
+  renderTab();
+}
+function deleteWine(id){
+  var w=S.wines.find(function(x){return x.id===id;});
+  if(!w) return;
+  if(!confirm('Usunąć wino „'+w.name+'" z bazy? Tej operacji nie cofniesz.')) return;
+  S.wines=S.wines.filter(function(x){return x.id!==id;});
+  save();
+  if(typeof sbPushWines==='function') sbPushWines();
+  toast('🗑 Usunięto: '+w.name);
+  renderTab();
 }
 
 // ─────────────────────────────────────────────
@@ -4688,8 +4732,23 @@ sbInit();
 
 // PWA — service worker (offline + instalacja na ekranie głównym)
 if ('serviceWorker' in navigator) {
+  // Auto-przeładowanie gdy nowy service worker przejmie kontrolę (koniec problemów z cache)
+  var _swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (_swRefreshing) return; _swRefreshing = true; window.location.reload();
+  });
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('service-worker.js').catch(function(e){ console.warn('SW:', e); });
+    navigator.serviceWorker.register('service-worker.js').then(function(reg){
+      // Sprawdzaj aktualizacje przy każdym otwarciu
+      reg.update();
+      if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+      reg.addEventListener('updatefound', function(){
+        var nw = reg.installing;
+        if (nw) nw.addEventListener('statechange', function(){
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) nw.postMessage('skipWaiting');
+        });
+      });
+    }).catch(function(e){ console.warn('SW:', e); });
   });
 }
 
