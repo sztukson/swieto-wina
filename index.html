@@ -33,11 +33,23 @@ body.light {
   .ni .ic{font-size:22px !important}
   .db-label,.ag-label,.wc-stat-label,.ic-label{font-size:11px !important}
 }
+/* 📱→📲 TABLET — szersza, wyśrodkowana kolumna + większe elementy (nie rozciąga się na całą szerokość) */
+@media (min-width: 700px) {
+  #cnt > *{max-width:760px;margin-left:auto;margin-right:auto}
+  #hdr,#offline-bar{padding-left:max(14px,calc((100% - 760px)/2));padding-right:max(14px,calc((100% - 760px)/2))}
+  #nav{max-width:760px;margin:0 auto;width:100%}
+  .wc-name{font-size:17px !important}
+  .btn-big{height:60px !important;font-size:15px !important}
+  .btn-act{height:74px !important}
+  .ni{font-size:12px !important}
+  .ni .ic{font-size:26px !important}
+  .db-val{font-size:32px}
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 /* Header */
-#hdr{background:linear-gradient(180deg,var(--s2),var(--s1));border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#hdr{background:linear-gradient(180deg,var(--s2),var(--s1));border-bottom:1px solid var(--border);padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .logo{font-family:Georgia,serif;font-size:18px;color:var(--gold);font-weight:bold;display:flex;align-items:center;gap:8px}
 .srv-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
 .srv-dot.on{background:var(--green)}
@@ -608,6 +620,8 @@ function saveColState() {
 var _col = loadColState();
 var COL_SEC  = _col.sec;
 var COL_WINE = _col.wine;
+// Migracja v2: nowy model (klik kategorii = nazwy, wino rozwijasz osobno) → wyzeruj stare rozwinięcia
+try { if (!localStorage.getItem('sw_col_v2')) { COL_WINE = {}; localStorage.setItem('sw_col_v2','1'); saveColState(); } } catch(e){}
 var COL_DAY  = _col.day || {}; // zapisane dni: id → true = zwinięty (domyślnie zwinięty)
 
 function toggleDay(id) {
@@ -618,13 +632,9 @@ function toggleDay(id) {
 }
 
 function toggleSec(type) {
-  var opening = COL_SEC[type] !== false;
+  // Klik kategorii = pokaż/ukryj LISTĘ NAZW win (każde wino rozwijasz osobno klikając nazwę).
+  // NIE rozwijamy automatycznie wszystkich win — mniej scrollowania na telefonie.
   COL_SEC[type] = !COL_SEC[type];
-  if (opening) {
-    S.wines.forEach(function(w) {
-      if (w.type === type) COL_WINE[w.id] = false;
-    });
-  }
   saveColState(); renderTab();
 }
 function toggleWine(id) {

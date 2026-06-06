@@ -1,6 +1,6 @@
 // Święto Wina — Service Worker (PWA offline)
 // Podbij wersję przy każdej aktualizacji, żeby wymusić odświeżenie cache.
-const CACHE = 'swieto-wina-v1';
+const CACHE = 'swieto-wina-v2';
 const SHELL = [
   './',
   'index.html',
