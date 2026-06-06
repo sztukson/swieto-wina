@@ -119,18 +119,19 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .tile.flash{animation:fl .4s}
 @keyframes fl{0%{background:var(--wine)}100%{background:var(--s1)}}
 .tile .tn{font-family:Georgia,serif;font-size:14px;color:var(--gold);font-weight:bold;line-height:1.15}
-.tile .tdg{font-size:20px;font-weight:700;margin-top:8px}
-.tile .ts{font-size:10px;color:var(--muted);margin-top:3px}
+.tile .tcounts{display:flex;justify-content:center;gap:16px;margin-top:9px}
+.tile .tcounts span{font-size:19px;font-weight:700}
+.tile .ts{font-size:11px;color:var(--muted);margin-top:5px}
 /* kolory wg koloru wina */
 .tile.t-red{background:linear-gradient(160deg,#3a1820,#220f15);border-color:rgba(176,42,66,.5)}
 .tile.t-red .tn{color:#e8808e}
-.tile.t-red .tdg{color:#e8808e}
+.tile.t-red .tcounts span{color:#e8808e}
 .tile.t-white{background:linear-gradient(160deg,#2c2718,#1a1710);border-color:rgba(200,168,75,.45)}
 .tile.t-white .tn{color:#e0c878}
-.tile.t-white .tdg{color:#e0c878}
+.tile.t-white .tcounts span{color:#e0c878}
 .tile.t-rose{background:linear-gradient(160deg,#3a2030,#24141d);border-color:rgba(212,85,138,.5)}
 .tile.t-rose .tn{color:#ec92bd}
-.tile.t-rose .tdg{color:#ec92bd}
+.tile.t-rose .tcounts span{color:#ec92bd}
 /* ── MODEL B: bottom sheet ── */
 .list-simple{display:flex;flex-direction:column;gap:6px}
 .ls-it{display:flex;justify-content:space-between;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:13px 14px;cursor:pointer}
@@ -310,8 +311,8 @@ function render(){
     list.forEach(function(w){
       h+='<div class="tile '+(TCLASS[w.type]||'')+'" id="tile-'+w.id+'" onclick="openPick(\''+w.id+'\')">'
         +'<div class="tn">'+w.name+'</div>'
-        +'<div class="tdg">🥂 '+w.dg+'</div>'
-        +'<div class="ts">🍾 '+w.bt+' · '+w.stock+' but.</div></div>';
+        +'<div class="tcounts"><span>🥂 '+w.dg+'</span><span>🍾 '+w.bt+'</span></div>'
+        +'<div class="ts">zostało '+w.stock+' but.</div></div>';
     });
     h+='</div>';
     document.getElementById('cnt').innerHTML=h;
