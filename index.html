@@ -220,6 +220,60 @@ input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .fade{animation:fadeIn .18s ease-out}
+/* ════ KAFELKI (sprzedaż na telefon) ════ */
+.kf-wrap{padding:10px 10px 30px}
+.kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:560px){.kf-grid{grid-template-columns:1fr 1fr 1fr}}
+.kf-tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none}
+.kf-tile:active{transform:scale(.93);border-color:var(--wine)}
+.kf-tile.flash{animation:kffl .4s}
+@keyframes kffl{0%{background:var(--wine)}100%{background:var(--s1)}}
+.kf-name{font-family:Georgia,serif;font-size:14px;color:var(--gold);font-weight:bold;line-height:1.15}
+.kf-counts{display:flex;justify-content:center;gap:16px;margin-top:9px}
+.kf-counts span{font-size:19px;font-weight:700}
+.kf-stock{font-size:11px;color:var(--muted);margin-top:5px}
+.kf-tile.t-red{background:linear-gradient(160deg,#3a1820,#220f15);border-color:rgba(176,42,66,.5)}
+.kf-tile.t-red .kf-name,.kf-tile.t-red .kf-counts span{color:#e8808e}
+.kf-tile.t-white{background:linear-gradient(160deg,#2c2718,#1a1710);border-color:rgba(200,168,75,.45)}
+.kf-tile.t-white .kf-name,.kf-tile.t-white .kf-counts span{color:#e0c878}
+.kf-tile.t-rose{background:linear-gradient(160deg,#3a2030,#24141d);border-color:rgba(212,85,138,.5)}
+.kf-tile.t-rose .kf-name,.kf-tile.t-rose .kf-counts span{color:#ec92bd}
+.kf-undo{display:flex;align-items:center;gap:7px;margin-bottom:10px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.28);border-radius:11px;padding:7px 9px}
+.kf-undo-l{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+.kf-undo-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.kf-undo-row::-webkit-scrollbar{display:none}
+.kf-undo-it{flex:0 0 auto;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:7px 11px;border-radius:18px;cursor:pointer;white-space:nowrap}
+.kf-undo-it b{color:#e74c3c;margin-left:3px;font-size:13px}
+.kf-undo-it:active{background:var(--s3);transform:scale(.95)}
+.kf-undo-it.ub-red{border-color:rgba(176,42,66,.55);color:#e8808e}
+.kf-undo-it.ub-white{border-color:rgba(200,168,75,.5);color:#e0c878}
+.kf-undo-it.ub-rose{border-color:rgba(212,85,138,.55);color:#ec92bd}
+/* popup wyboru */
+#pick{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:24px}
+#pick.show{display:flex}
+.pick-c{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:18px;width:100%;max-width:330px;animation:pop .15s}
+@keyframes pop{from{transform:scale(.9);opacity:.4}to{transform:scale(1);opacity:1}}
+.pick-name{font-family:Georgia,serif;font-size:20px;text-align:center}
+.pick-sub{font-size:12px;color:var(--muted);text-align:center;margin:3px 0 16px}
+.pick-btn{display:flex;align-items:center;justify-content:center;width:100%;border:none;border-radius:13px;padding:18px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.pick-btn:active{transform:scale(.96)}
+.pick-dg{background:var(--wine);color:#fff}
+.pick-bt{background:var(--s3);color:var(--gold);border:1px solid rgba(200,168,75,.4)}
+.pick-cancel{background:transparent;border:none;color:var(--muted);font-size:13px;width:100%;padding:8px;cursor:pointer}
+.pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin:12px 0 6px}
+.pick-seg{display:flex;gap:6px}
+.pick-seg button{flex:1;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:12px;font-weight:700;padding:12px 4px;border-radius:10px;cursor:pointer;transition:all .12s}
+.pick-seg button.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.14)}
+.pick-seg button:active{transform:scale(.95)}
+.pick-disc{flex-wrap:wrap}
+.pick-disc button{flex:1 1 28%}
+.pick-total{text-align:center;font-size:14px;margin:14px 0 10px;color:var(--text)}
+.pick-total b{color:var(--gold);font-size:19px}
+.pick-confirm{background:var(--green);color:#fff}
+.pick-back{display:block;width:100%;background:var(--s3);border:1.5px solid var(--gold);color:var(--gold);border-radius:13px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px}
+.pick-back:active{transform:scale(.96);background:rgba(200,168,75,.12)}
+.custom-big{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:24px;font-weight:700;padding:16px;outline:none;text-align:center;margin-bottom:4px}
+.custom-big:focus{border-color:var(--gold)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -260,7 +314,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <nav id="nav">
     <button class="ni on" id="tab-home"    onclick="go('home')">   <span class="ic">🍷</span>Wina</button>
     <button class="ni"    id="tab-glasses" onclick="go('glasses')"><span class="ic">🥂</span>Kieliszki</button>
-    <button class="ni"    id="tab-cash"    onclick="go('cash')">   <span class="ic">💰</span>Kasa</button>
+    <button class="ni"    id="tab-cash"    onclick="go('cash')">   <span class="ic">💰</span>Podsum.</button>
     <button class="ni"    id="tab-stats"   onclick="go('stats')">  <span class="ic">📊</span>Statsy</button>
     <button class="ni"    id="tab-more"    onclick="openMore()">   <span class="ic">⋯</span>Więcej</button>
   </nav>
@@ -271,16 +325,18 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div style="width:38px;height:4px;background:var(--dim);border-radius:3px;margin:2px auto 8px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <button class="more-it" onclick="moreGo('baza')">📒<span>Baza win</span></button>
-      <button class="more-it" onclick="moreGo('dni')">📅<span>Dni</span></button>
-      <button class="more-it" onclick="moreGo('log')">📋<span>Log operacji</span></button>
-      <button class="more-it" onclick="moreGo('ai')">🤖<span>Asystent AI</span></button>
-      <button class="more-it" onclick="closeMore();doExport()">📤<span>Eksport danych</span></button>
+      <button class="more-it" onclick="moreGo('dni')">📅<span>Dni / kalendarz</span></button>
+      <button class="more-it" onclick="closeMore();doExport()">📤<span>Transport danych</span></button>
       <button class="more-it" onclick="closeMore();doSettings()">⚙️<span>Ustawienia</span></button>
     </div>
     <button onclick="closeMore()" style="margin-top:6px;background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:12px;font-size:14px;font-weight:700;cursor:pointer">Zamknij</button>
   </div>
 </div>
 <div id="toast"></div>
+<!-- Popup sprzedaży kafelki: wino → rodzaj → płatność + rabat -->
+<div id="pick" onclick="if(event.target===this)closePick()">
+  <div class="pick-c" id="pick-c"></div>
+</div>
 <script>
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -1713,115 +1769,156 @@ function renderTab() {
 // RENDER HOME (Dashboard + Wine list)
 // ─────────────────────────────────────────────
 function renderHome() {
-  var rev = totalRev(), dg = totalDg(), bt = totalBt();
-  var ec = expectedCash(), dc = depColl(), avail = TOTAL_GLASSES - outside();
-
-  var bags = S.bags || {sold:0, rev:0};
-  var html = '<div class="db fade">';
-
-  var discActive = DISCOUNT.active && DISCOUNT.value > 0;
-  var ordCnt0 = ZAMOWIENIE.items.reduce(function(s,i){ return s+i.qty; }, 0);
-  var ordAct0 = ZAMOWIENIE.active;
-  // Baner zamówienia
-  if (ZAMOWIENIE.active) {
-    var ordCntB = ZAMOWIENIE.items.reduce(function(s,i){ return s+i.qty; }, 0);
-    var ordAmtB = ZAMOWIENIE.items.reduce(function(s,i){ return s+applyDiscount(i.price)*i.qty; }, 0);
-    html += '<div onclick="showOrderModal()" style="background:rgba(200,168,75,.1);border:2px solid var(--gold);border-radius:var(--r);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">';
-    html += '<div><div style="font-size:13px;font-weight:700;color:var(--gold)">🛒 Zamówienie aktywne</div>';
-    html += '<div style="font-size:11px;color:var(--muted)">' + (ordCntB>0 ? ordCntB+' poz. · '+fmtN(ordAmtB)+' zł · '+ZAMOWIENIE.payType : 'dodaj pozycje z kart win poniżej') + '</div></div>';
-    html += '<div style="display:flex;gap:6px">';
-    if (ordCntB > 0) html += '<div style="background:var(--wine);color:#fff;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">Podsumuj →</div>';
-    html += '<button onclick="event.stopPropagation();cancelOrder()" style="background:var(--s3);border:1px solid rgba(231,76,60,.4);color:var(--red);border-radius:6px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer">✕</button>';
-    html += '</div>';
-    html += '</div>';
-  }
-
-  // Dashboard
-  html += '<div class="db-grid">';
-  html += '<div class="db-card"><div class="db-label">Degustacje</div><div class="db-val">' + dg + '</div><div class="db-sub">sprzedanych</div></div>';
-  html += '<div class="db-card"><div class="db-label">Butelki</div><div class="db-val">' + bt + '</div><div class="db-sub">sprzedanych</div></div>';
-  html += '<div class="db-card" style="cursor:pointer" onclick="toggleRev()" id="rev-db-card"><div class="db-label">💰 Przychód <span style="font-size:11px;opacity:.5">👁</span></div><div id="rev-db-val" style="filter:blur(8px);color:var(--gold);font-size:22px;transition:filter .3s;user-select:none">' + fmtN(rev) + ' zł</div><div id="rev-db-sub" style="filter:blur(6px);font-size:11px;color:var(--muted);transition:filter .3s">ze sprzedaży</div></div>';
-  html += '<div class="db-card"><div class="db-label">🛍️ Torby</div><div class="db-val">' + bags.sold + '</div><div class="db-sub">' + fmtN(bags.rev) + ' zł</div></div>';
-  html += '<div class="db-card"><div class="db-label">Kaucje</div><div class="db-val" style="color:#5b9bd5;font-size:22px">' + fmtN(depBal()) + ' zł</div><div class="db-sub">saldo kaucji</div></div>';
-  html += '<div class="db-card full" style="cursor:pointer" onclick="toggleCash()" id="cash-db-card"><div class="db-label">🏦 Kasa — stan oczekiwany <span id="cash-eye" style="font-size:13px;opacity:.5">👁 kliknij aby pokazać</span></div><div id="cash-db-val" style="filter:blur(8px);color:var(--gold);font-size:32px;transition:filter .3s;user-select:none">' + fmtN(ec) + ' zł</div><div id="cash-db-sub" style="filter:blur(6px);font-size:12px;color:var(--muted);transition:filter .3s">start: ' + fmtN(cashInitial()) + ' zł · utarg ze sprzedaży: +' + fmtN(rev) + ' zł</div></div>';
+  var srch = (window._WINE_SEARCH||'').toLowerCase();
+  var html = '<div class="kf-wrap fade">';
+  // Szukanie
+  html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">';
+  html += '<input id="wine-search" type="text" placeholder="🔍 Szukaj wina..." value="' + (window._WINE_SEARCH||'') + '" oninput="window._WINE_SEARCH=this.value;renderHomeKeepFocus()" style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:11px 12px;font-size:14px;outline:none">';
+  if (window._WINE_SEARCH) html += '<button onclick="window._WINE_SEARCH=\'\';renderHome()" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--r);padding:11px 13px;cursor:pointer;font-size:13px">✕</button>';
   html += '</div>';
-
-  // Torby materiałowe — sprzedaż na pierwszej stronie
-  var ordBagQ0 = 0;
-  for (var bi=0; bi<ZAMOWIENIE.items.length; bi++) {
-    if (ZAMOWIENIE.items[bi].id === 'bag') { ordBagQ0 = ZAMOWIENIE.items[bi].qty; break; }
-  }
-  html += '<div style="background:rgba(200,168,75,.07);border:1px solid rgba(200,168,75,.22);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">';
-  html += '<div><div style="font-size:12px;font-weight:700;color:var(--gold)">🛍️ Torby materiałowe</div>';
-  html += '<div style="font-size:11px;color:var(--muted)">' + bags.sold + ' szt. · ' + fmtN(bags.rev) + ' zł</div></div>';
-  html += '<div style="display:flex;gap:6px;align-items:center">';
-  if (ZAMOWIENIE.active) {
-    html += '<button onclick="ordChange(\'bag\',\'bag\',-1)" style="background:var(--s3);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);width:40px;height:40px;font-size:18px;cursor:pointer" ' + (ordBagQ0===0?'disabled':'') + '>−</button>';
-    html += '<button onclick="ordChange(\'bag\',\'bag\',1)" style="background:' + (ordBagQ0>0?'rgba(200,168,75,.3)':'var(--wine)') + ';border:none;color:' + (ordBagQ0>0?'var(--gold)':'#fff') + ';border-radius:var(--rsm);padding:0 14px;height:40px;font-size:13px;font-weight:700;cursor:pointer">' + (ordBagQ0>0?'🛒 ×'+ordBagQ0:'+ Torba') + '</button>';
+  // Pasek cofania ostatnich akcji
+  html += buildKfUndo();
+  // Kafelki win
+  var wines = S.wines.filter(function(w){ return !srch || w.name.toLowerCase().indexOf(srch) !== -1; });
+  if (wines.length === 0) {
+    html += '<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px">Brak win — sprawdź wyszukiwanie</div>';
   } else {
-    html += '<button onclick="undoBag()" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);width:40px;height:40px;font-size:18px;cursor:pointer" ' + (bags.sold===0?'disabled':'') + '>−</button>';
-    html += '<button onclick="sellBag()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:0 16px;height:40px;font-size:13px;font-weight:700;cursor:pointer">+ Torba ' + BAG_PRICE + ' zł</button>';
+    html += '<div class="kf-grid">';
+    wines.forEach(function(w){
+      var bl = bottlesLeft(w);
+      var tc = KF_TCLASS[w.type] || '';
+      html += '<div class="kf-tile ' + tc + '" id="kf-' + w.id + '" onclick="openPick(\'' + w.id + '\')">';
+      html += '<div class="kf-name">' + esc(w.name) + '</div>';
+      html += '<div class="kf-counts"><span>🥂 ' + w.dg + '</span><span>🍾 ' + w.bt + '</span></div>';
+      html += '<div class="kf-stock">' + (bl > 0 ? 'zostało ' + bl + ' but.' : '⛔ brak') + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
   }
-  html += '</div></div>';
-
-  // Wyszukiwarka win
-  html += '<div style="display:flex;gap:6px;align-items:center">';
-  html += '<input id="wine-search" type="text" placeholder="🔍 Szukaj wina..." value="' + (window._WINE_SEARCH||'') + '" oninput="window._WINE_SEARCH=this.value;filterWines(this.value)" style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:9px 12px;font-size:13px">';
-  if (window._WINE_SEARCH) html += '<button onclick="window._WINE_SEARCH=\'\';document.getElementById(\'wine-search\').value=\'\';filterWines(\'\')" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--r);padding:9px 12px;cursor:pointer;font-size:13px">✕</button>';
-  html += '</div>';
-
-  // Wines by type — z kolorystyką per typ
-  var types = ['białe','różowe','czerwone'];
-  var typeConfig = {
-    białe:   {label:'🟡 Wina białe',   accent:'#c8a84b', bg:'rgba(200,168,75,.07)',  border:'rgba(200,168,75,.25)'},
-    różowe:  {label:'🌸 Wina różowe',  accent:'#d4558a', bg:'rgba(212,85,138,.07)',  border:'rgba(212,85,138,.25)'},
-    czerwone:{label:'🔴 Wina czerwone',accent:'#b02a42', bg:'rgba(176,42,66,.08)',   border:'rgba(176,42,66,.3)'}
-  };
-
-  types.forEach(function(type) {
-    var srch = (window._WINE_SEARCH||'').toLowerCase();
-    var wines = S.wines.filter(function(w){
-      if (w.type !== type) return false;
-      if (srch && w.name.toLowerCase().indexOf(srch) === -1) return false;
-      return true;
-    });
-    if (wines.length === 0) return; // ukryj sekcję jeśli brak wyników
-    var cfg = typeConfig[type];
-    var secCollapsed = srch ? false : (COL_SEC[type] !== false); // przy szukaniu rozwiń
-    var totalDgSec = wines.reduce(function(s,w){ return s+w.dg; }, 0);
-    var totalBtSec = wines.reduce(function(s,w){ return s+w.bt; }, 0);
-    var totalRevSec = wines.reduce(function(s,w){ return s+w.rev; }, 0);
-    var closedDgSec = wines.reduce(function(s,w){ return s + w.closedBottles.length; }, 0);
-    var anyCurrentSec = wines.some(function(w){ return (w.dg - w.dgAtLastClose) > 0; });
-    var dgButSecStr = closedDgSec > 0
-      ? (anyCurrentSec ? closedDgSec + '+1 but.' : closedDgSec + ' but.')
-      : (totalDgSec > 0 ? totalDgSec + ' kiel.' : '—');
-
-    // Nagłówek sekcji — klikalny
-    html += '<div class="sec-wrap" data-type="' + type + '">';
-    html += '<div onclick="toggleSec(\'' + type + '\')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:12px;font-weight:700;color:' + cfg.accent + ';letter-spacing:.5px;text-transform:uppercase;background:' + cfg.bg + ';border:1px solid ' + cfg.border + ';border-radius:10px">';
-    html += '<span>' + cfg.label + ' (' + wines.length + ')</span>';
-    html += '<span style="display:flex;align-items:center;gap:12px">';
-    // Podsumowanie sekcji gdy zwinięta — zawsze w DOM, ukrywane gdy rozwinięta
-    html += '<span class="sec-summary" style="font-size:11px;font-weight:600;opacity:.7;display:' + (secCollapsed ? '' : 'none') + '">🍾' + totalBtSec + ' spr. · 🥂' + dgButSecStr + ' dg · ' + fmtN(totalRevSec) + ' zł</span>';
-    html += '<span class="sec-arrow" style="font-size:16px;opacity:.6">' + (secCollapsed ? '▶' : '▼') + '</span>';
-    html += '</span>';
-    html += '</div>';
-
-    // Karty ZAWSZE w DOM — zwinięcie ukrywa przez CSS (umożliwia filtrowanie bez re-renderu)
-    html += '<div class="sec-body" style="display:' + (secCollapsed ? 'none' : 'flex') + ';flex-direction:column;gap:6px;margin-top:2px">';
-    wines.forEach(function(w) {
-      html += buildWineCard(w);
-    });
-    html += '</div>';
-    html += '<div style="height:6px"></div>';
-    html += '</div>'; // sec-wrap
-  });
-
   html += '</div>';
   document.getElementById('cnt').innerHTML = html;
-  // Po pełnym renderze przywróć aktywny filtr (np. po sprzedaży podczas szukania)
-  if (window._WINE_SEARCH) filterWines(window._WINE_SEARCH);
+}
+function renderHomeKeepFocus(){
+  renderHome();
+  var inp = document.getElementById('wine-search');
+  if (inp) { inp.focus(); var v = inp.value; inp.value=''; inp.value=v; }
+}
+
+// ════ KAFELKI — popup sprzedaży ════
+var KF_TCLASS = {'białe':'t-white','różowe':'t-rose','czerwone':'t-red'};
+var KF_UCLASS = {'białe':'ub-white','różowe':'ub-rose','czerwone':'ub-red'};
+var KF_PAYEMOJI = {'gotówka':'💵','karta':'💳','blik':'📱'};
+var PICK = null;
+
+function buildKfUndo(){
+  var recent = [];
+  for (var i=0; i<S.log.length && recent.length<5; i++){
+    if (S.log[i].type==='degustacja' || S.log[i].type==='butelka') recent.push(S.log[i]);
+  }
+  if (!recent.length) return '';
+  var h = '<div class="kf-undo"><span class="kf-undo-l">↩️ Cofnij:</span><div class="kf-undo-row">';
+  recent.forEach(function(e){
+    var w = S.wines.find(function(x){ return x.name===e.wine; });
+    var ucl = w ? (KF_UCLASS[w.type]||'') : '';
+    var icon = e.type==='degustacja' ? '🥂' : '🍾';
+    var pay = e.pay ? (KF_PAYEMOJI[e.pay]||'') : '';
+    var nm = (e.wine||'').split(' ')[0];
+    h += '<button class="kf-undo-it ' + ucl + '" onclick="kfUndo(\'' + e.type + '\',\'' + (w?w.id:'') + '\')">' + icon + ' ' + esc(nm) + ' ' + pay + ' <b>✕</b></button>';
+  });
+  h += '</div></div>';
+  return h;
+}
+function kfUndo(type, id){ if(!id) return; if(type==='degustacja') undoDg(id); else undoBt(id); }
+
+function wColorKf(t){ return t==='czerwone'?'#e8808e':t==='białe'?'#e0c878':'#ec92bd'; }
+function openPick(id){
+  var w = S.wines.find(function(x){ return x.id===id; });
+  if (!w) return;
+  PICK = {id:id, kind:null, pay:PAY_TYPE||'gotówka', discType:null, discVal:0, screen:null, customUnit:'%'};
+  if (navigator.vibrate) navigator.vibrate(8);
+  renderPick();
+  document.getElementById('pick').classList.add('show');
+}
+function closePick(){ document.getElementById('pick').classList.remove('show'); PICK=null; }
+function pickType(k){ PICK.kind=k; if(k!=='bt'){ PICK.discType=null; PICK.discVal=0; } renderPick(); }
+function pickBack(){ PICK.kind=null; renderPick(); }
+function pickPay(p){ PICK.pay=p; renderPick(); }
+function pickDisc(t,v){ PICK.discType=t; PICK.discVal=v; renderPick(); }
+function pickCustomOpen(){ PICK.screen='custom'; PICK.customUnit=PICK.customUnit||'%'; renderPick(); }
+function setCustomUnit(u){ PICK.customUnit=u; if(PICK.discVal>0){ PICK.discType=u; } renderPick(); }
+function applyCustom(){ if(!(PICK.discVal>0)){ PICK.discType=null; PICK.discVal=0; } PICK.screen=null; renderPick(); }
+function cancelCustom(){ PICK.discType=null; PICK.discVal=0; PICK.screen=null; renderPick(); }
+function kfDiscAmount(base){ if(PICK.kind!=='bt') return 0; if(PICK.discType==='%') return base*PICK.discVal/100; if(PICK.discType==='zł') return Math.min(base,PICK.discVal); return 0; }
+function kfDiscLabel(){ if(PICK.discType==='%') return '−'+PICK.discVal+'%'; if(PICK.discType==='zł') return '−'+PICK.discVal+' zł'; return null; }
+function customInput(v){
+  var n=parseFloat((''+v).replace(',','.'));
+  if(isNaN(n)||n<=0){ PICK.discType=null; PICK.discVal=0; }
+  else { PICK.discType=PICK.customUnit; PICK.discVal=n; }
+  var w=S.wines.find(function(x){return x.id===PICK.id;});
+  var fin=Math.max(0, w.pb - kfDiscAmount(w.pb));
+  var fe=document.getElementById('pick-fin'); if(fe) fe.textContent=fmtN(fin)+' zł';
+  var le=document.getElementById('pick-dlabel'); if(le) le.textContent=kfDiscLabel()?'('+kfDiscLabel()+')':'';
+}
+function renderPick(){
+  var w=S.wines.find(function(x){return x.id===PICK.id;});
+  var dgP=TASTING_PRICE, btP=w.pb, bl=bottlesLeft(w);
+  var h='<div class="pick-name" style="color:'+wColorKf(w.type)+'">'+esc(w.name)+'</div>';
+  if(PICK.screen==='custom'){
+    var cfin=Math.max(0,btP-kfDiscAmount(btP));
+    h+='<div class="pick-sub">Rabat dla 🍾 butelki · cena '+fmtN(btP)+' zł</div>';
+    h+='<div class="pick-lbl">Typ rabatu</div><div class="pick-seg">';
+    h+='<button class="'+(PICK.customUnit==='%'?'on':'')+'" onclick="setCustomUnit(\'%\')">% procent</button>';
+    h+='<button class="'+(PICK.customUnit==='zł'?'on':'')+'" onclick="setCustomUnit(\'zł\')">zł złotówki</button>';
+    h+='</div>';
+    h+='<div class="pick-lbl">Ile '+(PICK.customUnit==='%'?'procent':'złotych')+'?</div>';
+    h+='<input id="custom-input" type="number" inputmode="decimal" class="custom-big" placeholder="np. '+(PICK.customUnit==='%'?'15':'8')+'" value="'+(PICK.discVal>0?PICK.discVal:'')+'" oninput="customInput(this.value)">';
+    h+='<div class="pick-total">'+fmtN(btP)+' zł → <b id="pick-fin">'+fmtN(cfin)+' zł</b> <span id="pick-dlabel" style="color:var(--green);font-size:12px">'+(kfDiscLabel()?'('+kfDiscLabel()+')':'')+'</span></div>';
+    h+='<button class="pick-btn pick-confirm" onclick="applyCustom()">✓ Zastosuj rabat</button>';
+    h+='<button class="pick-back" onclick="cancelCustom()">← Wróć bez rabatu</button>';
+    document.getElementById('pick-c').innerHTML=h;
+    var ci=document.getElementById('custom-input'); if(ci) ci.focus();
+    return;
+  }
+  if(!PICK.kind){
+    h+='<div class="pick-sub">'+(bl>0?'zostało '+bl+' but.':'⛔ brak butelek')+' · wybierz rodzaj</div>';
+    h+='<button class="pick-btn pick-dg" onclick="pickType(\'dg\')">🥂 Degustacja — '+fmtN(dgP)+' zł</button>';
+    h+='<button class="pick-btn pick-bt" onclick="pickType(\'bt\')">🍾 Butelka — '+fmtN(btP)+' zł</button>';
+    h+='<button class="pick-cancel" onclick="closePick()">Anuluj</button>';
+    document.getElementById('pick-c').innerHTML=h;
+    return;
+  }
+  var base=PICK.kind==='dg'?dgP:btP;
+  var da=kfDiscAmount(base), fin=Math.max(0,base-da);
+  h+='<div class="pick-sub">'+(PICK.kind==='dg'?'🥂 Degustacja':'🍾 Butelka')+' · cena '+fmtN(base)+' zł</div>';
+  h+='<div class="pick-lbl">1. Płatność</div><div class="pick-seg">';
+  [['gotówka','💵','#2e7d4f'],['karta','💳','#2f6fb0'],['blik','📱','#7a3fb0']].forEach(function(p){
+    var on=PICK.pay===p[0];
+    h+='<button onclick="pickPay(\''+p[0]+'\')" style="'+(on?'background:'+p[2]+';color:#fff;border-color:'+p[2]:'')+'">'+p[1]+' '+p[0]+'</button>';
+  });
+  h+='</div>';
+  if(PICK.kind==='bt'){
+    var customActive = !!PICK.discType && !(PICK.discType==='%'&&(PICK.discVal===5||PICK.discVal===10));
+    h+='<div class="pick-lbl">2. Rabat (tylko butelka)</div><div class="pick-seg pick-disc">';
+    [['Brak',null,0],['−5%','%',5],['−10%','%',10]].forEach(function(o){
+      var on=(o[1]===null&&PICK.discType===null)||(PICK.discType===o[1]&&PICK.discVal===o[2]);
+      h+='<button class="'+(on?'on':'')+'" onclick="pickDisc('+(o[1]===null?'null':'\''+o[1]+'\'')+','+o[2]+')">'+o[0]+'</button>';
+    });
+    h+='<button class="'+(customActive?'on':'')+'" onclick="pickCustomOpen()">'+(customActive?'Inny '+kfDiscLabel():'Inny…')+'</button>';
+    h+='</div>';
+  }
+  h+='<div class="pick-total">Do zapłaty: <b>'+fmtN(fin)+' zł</b>'+(da>0?' <span style="color:var(--green);font-size:12px">('+kfDiscLabel()+')</span>':'')+'</div>';
+  h+='<button class="pick-btn pick-confirm" onclick="confirmPick()">✓ Sprzedaj '+fmtN(fin)+' zł '+KF_PAYEMOJI[PICK.pay]+'</button>';
+  h+='<button class="pick-back" onclick="pickBack()">← Wróć do wyboru rodzaju</button>';
+  document.getElementById('pick-c').innerHTML=h;
+}
+function confirmPick(){
+  var id=PICK.id, kind=PICK.kind, pay=PICK.pay, dt=PICK.discType, dv=PICK.discVal;
+  PAY_TYPE = pay;
+  if(kind==='bt' && dt && dv>0){ DISCOUNT={active:true, type:dt, value:dv}; }
+  else { DISCOUNT={active:false, type:'%', value:0}; }
+  closePick();
+  if(kind==='dg') sellDg(id); else sellBt(id);
+  DISCOUNT={active:false, type:'%', value:0};
 }
 
 var WINE_BG = {
@@ -2091,70 +2188,38 @@ function renderGlasses() {
 // RENDER CASH
 // ─────────────────────────────────────────────
 function renderCash() {
-  var ec = expectedCash(), cc = countedCash(), diff = cc - ec;
-  var bills = DENOMS.filter(function(d){ return d.bill; });
-  var coins = DENOMS.filter(function(d){ return !d.bill; });
-
-  var h = '<div class="cash-sec fade">';
-  h += '<div class="cash-card">';
-  h += '<div class="cc-title">💰 Kasa — stan oczekiwany</div>';
-  h += '<div class="cc-amt">' + fmtN(ec) + ' zł</div>';
-  h += '<div class="cc-sub">Otwarcie: ' + fmtN(cashInitial()) + ' zł · Utarg ze sprzedaży: +' + fmtN(totalRev()) + ' zł</div>';
-  h += '<div style="font-size:11px;color:var(--muted);margin-top:3px">Kaucje (' + fmt(depBal()) + ' salda) liczone osobno — rozliczane przy zwrocie kieliszków</div>';
-  h += '<div style="display:flex;gap:8px;margin-top:10px">';
-  h += '<div style="flex:1;background:var(--bg);border-radius:var(--rsm);padding:8px 10px"><div style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Policzono</div><div style="font-size:16px;font-weight:700">' + (cc>0?fmtN(cc)+' zł':'—') + '</div></div>';
-  h += '<div style="flex:1;background:var(--bg);border-radius:var(--rsm);padding:8px 10px"><div style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Różnica</div><div id="cc-diff" style="font-size:16px;font-weight:700;color:var(--muted)">' + (cc>0?(diff>=0?'+':'')+fmtN(diff)+' zł':'—') + '</div></div>';
-  h += '<div style="flex:1;background:var(--bg);border-radius:var(--rsm);padding:8px 10px"><div style="font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase">Kaucje</div><div style="font-size:16px;font-weight:700;color:#5b9bd5">+' + fmtN(depBal()) + ' zł</div></div>';
-  h += '</div>';
-  h += '</div>';
-
-  // Denomination counter
-  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">Przelicz gotówkę</div>';
-  h += buildDenomTable(bills, 'Banknoty');
-  h += buildDenomTable(coins, 'Monety');
-  h += '<div style="background:var(--s2);border-radius:var(--r);padding:12px 14px;display:flex;justify-content:space-between;align-items:center">';
-  h += '<span style="font-size:12px;color:var(--muted)">Suma policzonych</span>';
-  h += '<span id="cc-total" style="font-size:20px;font-weight:700;color:var(--gold)">' + fmt(cc) + '</span>';
-  h += '</div>';
-
-  // Torby
+  var ec = expectedCash();
+  var rev = totalRev(), dg = totalDg(), bt = totalBt();
   var bags = S.bags || {sold:0, rev:0};
-  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">🛍️ Torby materiałowe</div>';
-  h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between">';
-  h += '<div><span style="font-size:22px;font-weight:800;color:var(--text)">' + bags.sold + '</span><span style="font-size:12px;color:var(--muted);margin-left:6px">sprzedanych · ' + fmtN(bags.rev) + ' zł</span></div>';
-  h += '<div style="display:flex;gap:6px">';
-  h += '<button onclick="undoBag()" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:8px 12px;font-size:16px;cursor:pointer">−</button>';
-  h += '<button onclick="sellBag()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Torba 6 zł</button>';
-  h += '</div></div>';
+  var h = '<div class="cash-sec fade" style="padding:12px;display:flex;flex-direction:column;gap:10px">';
 
-  // Manko
-  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">📊 Manko / Nadwyżka</div>';
-  var expC = expectedCash();
-  h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px">';
-  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">';
-  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Oczekiwana</div><div style="font-size:18px;font-weight:700;color:var(--gold)">' + fmtN(expC) + ' zł</div></div>';
-  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Policzona</div><div style="font-size:18px;font-weight:700;color:var(--text)">' + (cc > 0 ? fmtN(cc) + ' zł' : '—') + '</div></div>';
-  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Różnica</div>';
-  if (cc > 0) {
-    var manko = cc - expC;
-    var mankoColor = manko >= 0 ? 'var(--green)' : 'var(--red)';
-    var mankoLabel = manko >= 0 ? '✅ Nadwyżka' : '⚠️ Manko';
-    h += '<div style="font-size:18px;font-weight:700;color:' + mankoColor + '">' + (manko >= 0 ? '+' : '') + fmtN(manko) + ' zł</div>';
-    h += '<div style="font-size:10px;color:' + mankoColor + '">' + mankoLabel + '</div>';
-  } else {
-    h += '<div style="font-size:14px;color:var(--muted)">przelicz gotówkę</div>';
-  }
-  h += '</div></div></div>';
+  // Podsumowanie liczb
+  h += '<div class="db-grid">';
+  h += '<div class="db-card"><div class="db-label">🥂 Degustacje</div><div class="db-val">' + dg + '</div><div class="db-sub">sprzedanych</div></div>';
+  h += '<div class="db-card"><div class="db-label">🍾 Butelki</div><div class="db-val">' + bt + '</div><div class="db-sub">sprzedanych</div></div>';
+  h += '<div class="db-card" style="cursor:pointer" onclick="toggleRev()" id="rev-db-card"><div class="db-label">💰 Przychód <span style="font-size:11px;opacity:.5">👁</span></div><div id="rev-db-val" style="filter:blur(8px);color:var(--gold);font-size:22px;transition:filter .3s;user-select:none">' + fmtN(rev) + ' zł</div><div id="rev-db-sub" style="filter:blur(6px);font-size:11px;color:var(--muted);transition:filter .3s">ze sprzedaży</div></div>';
+  h += '<div class="db-card"><div class="db-label">💎 Kaucje</div><div class="db-val" style="color:#5b9bd5;font-size:22px">' + fmtN(depBal()) + ' zł</div><div class="db-sub">saldo kaucji</div></div>';
+  h += '</div>';
+
+  // Kasa — stan oczekiwany (ukryty, kliknij aby pokazać)
+  h += '<div class="db-card full" style="cursor:pointer" onclick="toggleCash()" id="cash-db-card"><div class="db-label">🏦 Kasa — stan oczekiwany <span id="cash-eye" style="font-size:13px;opacity:.5">👁 kliknij aby pokazać</span></div><div id="cash-db-val" style="filter:blur(8px);color:var(--gold);font-size:32px;transition:filter .3s;user-select:none">' + fmtN(ec) + ' zł</div><div id="cash-db-sub" style="filter:blur(6px);font-size:12px;color:var(--muted);transition:filter .3s">start: ' + fmtN(cashInitial()) + ' zł · utarg: +' + fmtN(rev) + ' zł</div></div>';
 
   // Kasa startowa — edycja
-  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">💵 Kasa startowa</div>';
   h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between">';
-  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Saldo otwarcia</div><div style="font-size:22px;font-weight:700;color:var(--gold)">' + fmtN(cashInitial()) + ' zł</div></div>';
+  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">💵 Kasa startowa (otwarcie)</div><div style="font-size:20px;font-weight:700;color:var(--gold)">' + fmtN(cashInitial()) + ' zł</div></div>';
   h += '<button onclick="openSetInitialCash()" style="background:var(--s3);border:1px solid var(--border);color:var(--text);border-radius:var(--rsm);padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">✏️ Zmień</button>';
   h += '</div>';
 
-  // Cash operation form
-  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">Operacja kasowa</div>';
+  // Torby
+  h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between">';
+  h += '<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">🛍️ Torby materiałowe</div><div style="font-size:20px;font-weight:700">' + bags.sold + ' <span style="font-size:12px;color:var(--muted);font-weight:400">szt. · ' + fmtN(bags.rev) + ' zł</span></div></div>';
+  h += '<div style="display:flex;gap:6px">';
+  h += '<button onclick="undoBag()" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:8px 12px;font-size:16px;cursor:pointer">−</button>';
+  h += '<button onclick="sellBag()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">+ Torba ' + BAG_PRICE + ' zł</button>';
+  h += '</div></div>';
+
+  // Operacja gotówkowa
+  h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold);margin-top:4px">💸 Operacja gotówkowa (wpłata / wypłata)</div>';
   h += '<div class="op-form">';
   h += '<div><div class="fl">Rodzaj</div><div class="op-btns"><div class="op-btn on-in" data-t="wpłata" onclick="setOpType(\'wpłata\')">⬆️ Wpłata</div><div class="op-btn" data-t="wypłata" onclick="setOpType(\'wypłata\')">⬇️ Wypłata</div></div></div>';
   h += '<div><div class="fl">Kwota (zł)</div><input class="fi" id="op-amt" type="number" step="0.01" placeholder="0,00"></div>';
@@ -2163,7 +2228,7 @@ function renderCash() {
   h += '<button class="btn-p" onclick="submitOp()">Dodaj operację</button>';
   h += '</div>';
 
-  // Recent ops
+  // Ostatnie operacje
   var ops = S.cash.ops.slice().reverse().slice(0,8);
   h += '<div style="font-family:Georgia,serif;font-size:15px;color:var(--gold)">Ostatnie operacje</div>';
   h += '<div class="dep-box">';
@@ -2175,8 +2240,8 @@ function renderCash() {
     });
   }
   h += '</div>';
-  h += '</div>';
 
+  h += '</div>';
   document.getElementById('cnt').innerHTML = h;
   setOpType(OP_T);
 }
