@@ -61,6 +61,8 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .pick-total{text-align:center;font-size:14px;margin:14px 0 10px;color:var(--text)}
 .pick-total b{color:var(--gold);font-size:19px}
 .pick-confirm{background:var(--green);color:#fff}
+.pick-back{display:block;width:100%;background:var(--s3);border:1.5px solid var(--gold);color:var(--gold);border-radius:13px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px}
+.pick-back:active{transform:scale(.96);background:rgba(200,168,75,.12)}
 .navchip{border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
 .navchip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.12)}
 #cnt{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 30px}
@@ -423,7 +425,7 @@ function renderPick(){
     }
     h+='<div class="pick-total">Do zapłaty: <b>'+fin+' zł</b>'+(da>0?' <span style="color:var(--green);font-size:12px">('+discLabel()+')</span>':'')+'</div>';
     h+='<button class="pick-btn pick-confirm" onclick="confirmPick()">✓ Sprzedaj '+fin+' zł '+PAY_ICON[PICK.pay]+'</button>';
-    h+='<button class="pick-cancel" onclick="pickBack()">← Wróć do rodzaju</button>';
+    h+='<button class="pick-back" onclick="pickBack()">← Wróć do wyboru rodzaju</button>';
   }
   document.getElementById('pick-c').innerHTML=h;
 }
