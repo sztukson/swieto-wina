@@ -36,6 +36,21 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .ub-it{flex:0 0 auto;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:7px 11px;border-radius:18px;cursor:pointer;white-space:nowrap}
 .ub-it b{color:#e74c3c;margin-left:3px;font-size:13px}
 .ub-it:active{background:var(--s3);transform:scale(.95)}
+.ub-it.ub-red{border-color:rgba(176,42,66,.55);color:#e8808e}
+.ub-it.ub-white{border-color:rgba(200,168,75,.5);color:#e0c878}
+.ub-it.ub-rose{border-color:rgba(212,85,138,.55);color:#ec92bd}
+/* popup wyboru */
+#pick{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:24px}
+#pick.show{display:flex}
+.pick-c{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:18px;width:100%;max-width:330px;animation:pop .15s}
+@keyframes pop{from{transform:scale(.9);opacity:.4}to{transform:scale(1);opacity:1}}
+.pick-name{font-family:Georgia,serif;font-size:20px;text-align:center}
+.pick-sub{font-size:12px;color:var(--muted);text-align:center;margin:3px 0 16px}
+.pick-btn{display:flex;align-items:center;justify-content:center;width:100%;border:none;border-radius:13px;padding:18px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.pick-btn:active{transform:scale(.96)}
+.pick-dg{background:var(--wine);color:#fff}
+.pick-bt{background:var(--s3);color:var(--gold);border:1px solid rgba(200,168,75,.4)}
+.pick-cancel{background:transparent;border:none;color:var(--muted);font-size:13px;width:100%;padding:8px;cursor:pointer}
 .navchip{border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
 .navchip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.12)}
 #cnt{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 30px}
@@ -152,6 +167,10 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 <div id="sheet" onclick="if(event.target===this)closeSheet()">
   <div class="sheet-c" id="sheet-c"></div>
 </div>
+<!-- Popup wyboru degustacja/butelka (model kafelki) -->
+<div id="pick" onclick="if(event.target===this)closePick()">
+  <div class="pick-c" id="pick-c"></div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -177,6 +196,7 @@ var SEARCH = '';
 var SEC_OPEN = {czerwone:true, 'białe':false, różowe:false};
 var SOLD = {dg:0, bt:0, rev:0};
 var TCLASS = {czerwone:'t-red', 'białe':'t-white', różowe:'t-rose'};
+var UCLASS = {czerwone:'ub-red', 'białe':'ub-white', różowe:'ub-rose'};
 var LOG = [];     // ostatnie akcje do cofania
 var SEQ = 0;
 
@@ -190,7 +210,7 @@ function sell(id, kind){
   var amt;
   if(kind==='dg'){ amt=w.dgPrice; w.dg++; SOLD.dg++; SOLD.rev += amt; }
   else { if(w.stock<=0){ toast('⚠️ Brak butelek!'); buzz([30,40,30]); return; } amt=w.btPrice; w.stock--; w.bt++; SOLD.bt++; SOLD.rev += amt; }
-  LOG.push({seq:++SEQ, wineId:id, name:w.name, kind:kind, pay:PAY, amt:amt});
+  LOG.push({seq:++SEQ, wineId:id, name:w.name, kind:kind, pay:PAY, amt:amt, type:w.type});
   buzz(14);
   toast((kind==='dg'?'🥂 ':'🍾 ')+w.name+'  '+PAY_ICON[PAY]);
   updCounter();
@@ -244,7 +264,7 @@ function render(){
   if(LOG.length){
     h+='<div class="undo-bar"><span class="ub-l">↩️ Cofnij:</span><div class="ub-row">';
     LOG.slice(-5).reverse().forEach(function(a){
-      h+='<button class="ub-it" onclick="undoAction('+a.seq+')">'+(a.kind==='dg'?'🥂':'🍾')+' '+a.name.split(' ')[0]+' '+PAY_ICON[a.pay]+' <b>✕</b></button>';
+      h+='<button class="ub-it '+(UCLASS[a.type]||'')+'" onclick="undoAction('+a.seq+')">'+(a.kind==='dg'?'🥂':'🍾')+' '+a.name.split(' ')[0]+' '+PAY_ICON[a.pay]+' <b>✕</b></button>';
     });
     h+='</div></div>';
   }
@@ -271,17 +291,16 @@ function render(){
   var list = filtered();
 
   if(MODEL==='grid'){
-    h+='<div class="hint">Tap = degustacja · przytrzymaj = butelka</div>';
+    h+='<div class="hint">Dotknij wino → wybierz 🥂 degustacja lub 🍾 butelka</div>';
     h+='<div class="grid">';
     list.forEach(function(w){
-      h+='<div class="tile '+(TCLASS[w.type]||'')+'" id="tile-'+w.id+'" data-id="'+w.id+'">'
+      h+='<div class="tile '+(TCLASS[w.type]||'')+'" id="tile-'+w.id+'" onclick="openPick(\''+w.id+'\')">'
         +'<div class="tn">'+w.name+'</div>'
         +'<div class="tdg">🥂 '+w.dg+'</div>'
         +'<div class="ts">🍾 '+w.bt+' · '+w.stock+' but.</div></div>';
     });
     h+='</div>';
     document.getElementById('cnt').innerHTML=h;
-    bindTiles();
     return;
   }
 
@@ -350,6 +369,26 @@ function openSheet(id){
   document.getElementById('sheet').classList.add('show');
 }
 function closeSheet(){ document.getElementById('sheet').classList.remove('show'); }
+
+// ── Popup wyboru degustacja/butelka (kafelki) ──
+function openPick(id){
+  var w=WINES.find(function(x){return x.id===id;});
+  buzz(8);
+  var h='<div class="pick-name" style="color:'+(w.type==='czerwone'?'#e8808e':w.type==='białe'?'#e0c878':'#ec92bd')+'">'+w.name+'</div>';
+  h+='<div class="pick-sub">'+w.stock+' but. w zapasie · płatność '+PAY_ICON[PAY]+' '+PAY+'</div>';
+  h+='<button class="pick-btn pick-dg" onclick="pickSell(\''+id+'\',\'dg\')">🥂 Degustacja — '+w.dgPrice+' zł</button>';
+  h+='<button class="pick-btn pick-bt" onclick="pickSell(\''+id+'\',\'bt\')">🍾 Butelka — '+w.btPrice+' zł</button>';
+  h+='<button class="pick-cancel" onclick="closePick()">Anuluj</button>';
+  document.getElementById('pick-c').innerHTML=h;
+  document.getElementById('pick').classList.add('show');
+}
+function closePick(){ document.getElementById('pick').classList.remove('show'); }
+function pickSell(id,kind){
+  closePick();
+  sell(id,kind);
+  var el=document.getElementById('tile-'+id);
+  if(el){ el.classList.add('flash'); setTimeout(function(){el.classList.remove('flash');},400); }
+}
 function sheetSell(id,kind,dir){
   var w=WINES.find(function(x){return x.id===id;});
   if(dir>0){ sell(id,kind); }
