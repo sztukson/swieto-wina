@@ -227,7 +227,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .kf-chip{white-space:nowrap;flex:0 0 auto;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;cursor:pointer;transition:all .12s}
 .kf-chip.on{background:var(--gold);color:#1a1410;border-color:var(--gold)}
 .kf-chip:active{transform:scale(.95)}
-.kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;grid-auto-rows:1fr}
 @media(min-width:560px){.kf-grid{grid-template-columns:1fr 1fr 1fr}}
 .kf-tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;justify-content:flex-start}
 .kf-tile:active{transform:scale(.93);border-color:var(--wine)}
@@ -265,6 +265,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .pick-dg{background:var(--wine);color:#fff}
 .pick-bt{background:var(--s3);color:var(--gold);border:1px solid rgba(200,168,75,.4)}
 .pick-cancel{background:transparent;border:none;color:var(--muted);font-size:13px;width:100%;padding:8px;cursor:pointer}
+.pick-anuluj{display:block;width:100%;background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:13px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.pick-anuluj:active{transform:scale(.96);background:var(--s2)}
 .pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin:12px 0 6px}
 .pick-seg{display:flex;gap:6px}
 .pick-seg button{flex:1;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:12px;font-weight:700;padding:12px 4px;border-radius:10px;cursor:pointer;transition:all .12s}
@@ -1901,7 +1903,7 @@ function renderPick(){
     h+='<div class="pick-sub">'+(bl>0?'zostało '+bl+' but.':'⛔ brak butelek')+' · wybierz rodzaj</div>';
     h+='<button class="pick-btn pick-dg" onclick="pickType(\'dg\')">🥂 Degustacja — '+fmtN(dgP)+' zł</button>';
     h+='<button class="pick-btn pick-bt" onclick="pickType(\'bt\')">🍾 Butelka — '+fmtN(btP)+' zł</button>';
-    h+='<button class="pick-cancel" onclick="closePick()">Anuluj</button>';
+    h+='<button class="pick-anuluj" onclick="closePick()">Anuluj</button>';
     document.getElementById('pick-c').innerHTML=h;
     return;
   }
