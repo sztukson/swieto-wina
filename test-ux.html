@@ -380,7 +380,7 @@ function closeSheet(){ document.getElementById('sheet').classList.remove('show')
 function wColor(t){ return t==='czerwone'?'#e8808e':t==='białe'?'#e0c878':'#ec92bd'; }
 function openPick(id){ PICK={id:id, kind:null, pay:PAY, discType:null, discVal:0}; buzz(8); renderPick(); document.getElementById('pick').classList.add('show'); }
 function closePick(){ document.getElementById('pick').classList.remove('show'); PICK=null; }
-function pickType(k){ PICK.kind=k; buzz(8); renderPick(); }
+function pickType(k){ PICK.kind=k; if(k!=='bt'){ PICK.discType=null; PICK.discVal=0; } buzz(8); renderPick(); }
 function pickBack(){ PICK.kind=null; renderPick(); }
 function pickPay(p){ PICK.pay=p; buzz(8); renderPick(); }
 function pickDisc(t,v){ PICK.discType=t; PICK.discVal=v; buzz(8); renderPick(); }
@@ -391,7 +391,7 @@ function pickDiscCustom(){
   else { var z=parseFloat(s); if(!isNaN(z)&&z>0){ PICK.discType='zł'; PICK.discVal=z; } }
   renderPick();
 }
-function discAmount(base){ if(PICK.discType==='%') return base*PICK.discVal/100; if(PICK.discType==='zł') return Math.min(base,PICK.discVal); return 0; }
+function discAmount(base){ if(PICK.kind!=='bt') return 0; if(PICK.discType==='%') return base*PICK.discVal/100; if(PICK.discType==='zł') return Math.min(base,PICK.discVal); return 0; }
 function discLabel(){ if(PICK.discType==='%') return '−'+PICK.discVal+'%'; if(PICK.discType==='zł') return '−'+PICK.discVal+' zł'; return null; }
 function renderPick(){
   var w=WINES.find(function(x){return x.id===PICK.id;});
@@ -411,14 +411,16 @@ function renderPick(){
       h+='<button onclick="pickPay(\''+p[0]+'\')" style="'+(on?'background:'+p[2]+';color:#fff;border-color:'+p[2]:'')+'">'+p[1]+' '+p[0]+'</button>';
     });
     h+='</div>';
-    h+='<div class="pick-lbl">2. Rabat (opcjonalnie)</div><div class="pick-seg pick-disc">';
-    [['Brak',null,0],['−10%','%',10],['−20%','%',20],['−5 zł','zł',5]].forEach(function(o){
-      var on=(o[1]===null&&PICK.discType===null)||(PICK.discType===o[1]&&PICK.discVal===o[2]);
-      h+='<button class="'+(on?'on':'')+'" onclick="pickDisc('+(o[1]===null?'null':'\''+o[1]+'\'')+','+o[2]+')">'+o[0]+'</button>';
-    });
-    var isPreset=(PICK.discType===null)||(PICK.discType==='%'&&(PICK.discVal===10||PICK.discVal===20))||(PICK.discType==='zł'&&PICK.discVal===5);
-    h+='<button class="'+(!isPreset?'on':'')+'" onclick="pickDiscCustom()">Inny…</button>';
-    h+='</div>';
+    if(PICK.kind==='bt'){
+      h+='<div class="pick-lbl">2. Rabat (tylko butelka)</div><div class="pick-seg pick-disc">';
+      [['Brak',null,0],['−5%','%',5],['−10%','%',10]].forEach(function(o){
+        var on=(o[1]===null&&PICK.discType===null)||(PICK.discType===o[1]&&PICK.discVal===o[2]);
+        h+='<button class="'+(on?'on':'')+'" onclick="pickDisc('+(o[1]===null?'null':'\''+o[1]+'\'')+','+o[2]+')">'+o[0]+'</button>';
+      });
+      var isPreset=(PICK.discType===null)||(PICK.discType==='%'&&(PICK.discVal===5||PICK.discVal===10));
+      h+='<button class="'+(!isPreset?'on':'')+'" onclick="pickDiscCustom()">Inny…</button>';
+      h+='</div>';
+    }
     h+='<div class="pick-total">Do zapłaty: <b>'+fin+' zł</b>'+(da>0?' <span style="color:var(--green);font-size:12px">('+discLabel()+')</span>':'')+'</div>';
     h+='<button class="pick-btn pick-confirm" onclick="confirmPick()">✓ Sprzedaj '+fin+' zł '+PAY_ICON[PICK.pay]+'</button>';
     h+='<button class="pick-cancel" onclick="pickBack()">← Wróć do rodzaju</button>';
