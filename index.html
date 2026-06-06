@@ -222,6 +222,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .fade{animation:fadeIn .18s ease-out}
 /* ════ KAFELKI (sprzedaż na telefon) ════ */
 .kf-wrap{padding:10px 10px 30px}
+.kf-chips{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}
+.kf-chips::-webkit-scrollbar{display:none}
+.kf-chip{white-space:nowrap;flex:0 0 auto;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;cursor:pointer;transition:all .12s}
+.kf-chip.on{background:var(--gold);color:#1a1410;border-color:var(--gold)}
+.kf-chip:active{transform:scale(.95)}
 .kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(min-width:560px){.kf-grid{grid-template-columns:1fr 1fr 1fr}}
 .kf-tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;justify-content:flex-start}
@@ -1776,10 +1781,21 @@ function renderHome() {
   html += '<input id="wine-search" type="text" placeholder="🔍 Szukaj wina..." value="' + (window._WINE_SEARCH||'') + '" oninput="window._WINE_SEARCH=this.value;renderHomeKeepFocus()" style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:11px 12px;font-size:14px;outline:none">';
   if (window._WINE_SEARCH) html += '<button onclick="window._WINE_SEARCH=\'\';renderHome()" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--r);padding:11px 13px;cursor:pointer;font-size:13px">✕</button>';
   html += '</div>';
+  // Filtr koloru wina
+  var cats = [['all','Wszystkie'],['czerwone','🍷 Czerwone'],['białe','🥂 Białe'],['różowe','🌸 Różowe']];
+  html += '<div class="kf-chips">';
+  cats.forEach(function(c){
+    html += '<button class="kf-chip' + (HOME_CAT===c[0]?' on':'') + '" onclick="setHomeCat(\'' + c[0] + '\')">' + c[1] + '</button>';
+  });
+  html += '</div>';
   // Pasek cofania ostatnich akcji
   html += buildKfUndo();
   // Kafelki win
-  var wines = S.wines.filter(function(w){ return !srch || w.name.toLowerCase().indexOf(srch) !== -1; });
+  var wines = S.wines.filter(function(w){
+    if (HOME_CAT !== 'all' && w.type !== HOME_CAT) return false;
+    if (srch && w.name.toLowerCase().indexOf(srch) === -1) return false;
+    return true;
+  });
   if (wines.length === 0) {
     html += '<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px">Brak win — sprawdź wyszukiwanie</div>';
   } else {
@@ -1805,6 +1821,8 @@ function renderHomeKeepFocus(){
 }
 
 // ════ KAFELKI — popup sprzedaży ════
+var HOME_CAT = 'all';
+function setHomeCat(c){ HOME_CAT = c; renderHome(); }
 var KF_TCLASS = {'białe':'t-white','różowe':'t-rose','czerwone':'t-red'};
 var KF_UCLASS = {'białe':'ub-white','różowe':'ub-rose','czerwone':'ub-red'};
 var KF_PAYEMOJI = {'gotówka':'💵','karta':'💳','blik':'📱'};
