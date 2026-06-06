@@ -51,6 +51,16 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .pick-dg{background:var(--wine);color:#fff}
 .pick-bt{background:var(--s3);color:var(--gold);border:1px solid rgba(200,168,75,.4)}
 .pick-cancel{background:transparent;border:none;color:var(--muted);font-size:13px;width:100%;padding:8px;cursor:pointer}
+.pick-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin:12px 0 6px}
+.pick-seg{display:flex;gap:6px}
+.pick-seg button{flex:1;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:12px;font-weight:700;padding:12px 4px;border-radius:10px;cursor:pointer;transition:all .12s}
+.pick-seg button.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.14)}
+.pick-seg button:active{transform:scale(.95)}
+.pick-disc{flex-wrap:wrap}
+.pick-disc button{flex:1 1 28%}
+.pick-total{text-align:center;font-size:14px;margin:14px 0 10px;color:var(--text)}
+.pick-total b{color:var(--gold);font-size:19px}
+.pick-confirm{background:var(--green);color:#fff}
 .navchip{border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;cursor:pointer;transition:all .15s}
 .navchip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.12)}
 #cnt{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 30px}
@@ -148,12 +158,6 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
       <button id="m-list" onclick="setModel('list')">📋 Lista</button>
       <button id="m-sheet" onclick="setModel('sheet')">⬆️ Panel</button>
     </div>
-    <div class="paybar" id="paybar">
-      <span class="pl">Płatność:</span>
-      <button id="p-gotówka" class="on" onclick="setPay('gotówka')">💵 Gotówka</button>
-      <button id="p-karta" onclick="setPay('karta')">💳 Karta</button>
-      <button id="p-blik" onclick="setPay('blik')">📱 BLIK</button>
-    </div>
     <div class="navchips" id="navchips">
       <button class="navchip" id="n-fav" onclick="toggleNav('fav')">⭐ Ulubione</button>
       <button class="navchip" id="n-chips" onclick="toggleNav('chips')">🎨 Kolor wina</button>
@@ -199,20 +203,27 @@ var TCLASS = {czerwone:'t-red', 'białe':'t-white', różowe:'t-rose'};
 var UCLASS = {czerwone:'ub-red', 'białe':'ub-white', różowe:'ub-rose'};
 var LOG = [];     // ostatnie akcje do cofania
 var SEQ = 0;
+var PICK = null;  // stan popupa: {id,kind,pay,discType,discVal}
 
 function buzz(ms){ if(navigator.vibrate) navigator.vibrate(ms||14); }
 function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},1100); }
 function fmt(n){ return n.toLocaleString('pl-PL'); }
 
-function sell(id, kind){
+function sell(id, kind, opts){
+  opts = opts || {};
   var w = WINES.find(function(x){return x.id===id;});
   if(!w) return;
-  var amt;
-  if(kind==='dg'){ amt=w.dgPrice; w.dg++; SOLD.dg++; SOLD.rev += amt; }
-  else { if(w.stock<=0){ toast('⚠️ Brak butelek!'); buzz([30,40,30]); return; } amt=w.btPrice; w.stock--; w.bt++; SOLD.bt++; SOLD.rev += amt; }
-  LOG.push({seq:++SEQ, wineId:id, name:w.name, kind:kind, pay:PAY, amt:amt, type:w.type});
+  if(kind==='bt' && w.stock<=0){ toast('⚠️ Brak butelek!'); buzz([30,40,30]); return; }
+  var pay  = opts.pay || PAY;
+  var base = kind==='dg' ? w.dgPrice : w.btPrice;
+  var disc = opts.discAmt || 0;
+  var amt  = Math.max(0, base - disc);
+  if(kind==='dg'){ w.dg++; SOLD.dg++; } else { w.stock--; w.bt++; SOLD.bt++; }
+  SOLD.rev += amt;
+  PAY = pay; // zapamiętaj ostatnią płatność
+  LOG.push({seq:++SEQ, wineId:id, name:w.name, kind:kind, pay:pay, amt:amt, type:w.type, disc:opts.discLabel||null});
   buzz(14);
-  toast((kind==='dg'?'🥂 ':'🍾 ')+w.name+'  '+PAY_ICON[PAY]);
+  toast((kind==='dg'?'🥂 ':'🍾 ')+w.name+'  '+PAY_ICON[pay]+(opts.discLabel?' '+opts.discLabel:''));
   updCounter();
   render();
 }
@@ -232,11 +243,6 @@ function undoAction(seq){
   toast('↩️ Cofnięto: '+(a.kind==='dg'?'🥂 ':'🍾 ')+a.name);
   updCounter();
   render();
-}
-function setPay(p){
-  PAY = p;
-  ['gotówka','karta','blik'].forEach(function(x){ document.getElementById('p-'+x).classList.toggle('on', x===p); });
-  buzz(8);
 }
 function updCounter(){
   document.getElementById('c-dg').textContent = SOLD.dg;
@@ -264,7 +270,7 @@ function render(){
   if(LOG.length){
     h+='<div class="undo-bar"><span class="ub-l">↩️ Cofnij:</span><div class="ub-row">';
     LOG.slice(-5).reverse().forEach(function(a){
-      h+='<button class="ub-it '+(UCLASS[a.type]||'')+'" onclick="undoAction('+a.seq+')">'+(a.kind==='dg'?'🥂':'🍾')+' '+a.name.split(' ')[0]+' '+PAY_ICON[a.pay]+' <b>✕</b></button>';
+      h+='<button class="ub-it '+(UCLASS[a.type]||'')+'" onclick="undoAction('+a.seq+')">'+(a.kind==='dg'?'🥂':'🍾')+' '+a.name.split(' ')[0]+' '+PAY_ICON[a.pay]+(a.disc?' '+a.disc:'')+' <b>✕</b></button>';
     });
     h+='</div></div>';
   }
@@ -370,22 +376,61 @@ function openSheet(id){
 }
 function closeSheet(){ document.getElementById('sheet').classList.remove('show'); }
 
-// ── Popup wyboru degustacja/butelka (kafelki) ──
-function openPick(id){
-  var w=WINES.find(function(x){return x.id===id;});
-  buzz(8);
-  var h='<div class="pick-name" style="color:'+(w.type==='czerwone'?'#e8808e':w.type==='białe'?'#e0c878':'#ec92bd')+'">'+w.name+'</div>';
-  h+='<div class="pick-sub">'+w.stock+' but. w zapasie · płatność '+PAY_ICON[PAY]+' '+PAY+'</div>';
-  h+='<button class="pick-btn pick-dg" onclick="pickSell(\''+id+'\',\'dg\')">🥂 Degustacja — '+w.dgPrice+' zł</button>';
-  h+='<button class="pick-btn pick-bt" onclick="pickSell(\''+id+'\',\'bt\')">🍾 Butelka — '+w.btPrice+' zł</button>';
-  h+='<button class="pick-cancel" onclick="closePick()">Anuluj</button>';
-  document.getElementById('pick-c').innerHTML=h;
-  document.getElementById('pick').classList.add('show');
+// ── Popup 2-krokowy: wino → rodzaj → płatność + rabat ──
+function wColor(t){ return t==='czerwone'?'#e8808e':t==='białe'?'#e0c878':'#ec92bd'; }
+function openPick(id){ PICK={id:id, kind:null, pay:PAY, discType:null, discVal:0}; buzz(8); renderPick(); document.getElementById('pick').classList.add('show'); }
+function closePick(){ document.getElementById('pick').classList.remove('show'); PICK=null; }
+function pickType(k){ PICK.kind=k; buzz(8); renderPick(); }
+function pickBack(){ PICK.kind=null; renderPick(); }
+function pickPay(p){ PICK.pay=p; buzz(8); renderPick(); }
+function pickDisc(t,v){ PICK.discType=t; PICK.discVal=v; buzz(8); renderPick(); }
+function pickDiscCustom(){
+  var s=prompt('Rabat — wpisz np. 10% albo 5 (zł):',''); if(s===null) return;
+  s=s.trim().replace(',','.');
+  if(s.indexOf('%')!==-1){ var p=parseFloat(s); if(!isNaN(p)&&p>0){ PICK.discType='%'; PICK.discVal=p; } }
+  else { var z=parseFloat(s); if(!isNaN(z)&&z>0){ PICK.discType='zł'; PICK.discVal=z; } }
+  renderPick();
 }
-function closePick(){ document.getElementById('pick').classList.remove('show'); }
-function pickSell(id,kind){
+function discAmount(base){ if(PICK.discType==='%') return base*PICK.discVal/100; if(PICK.discType==='zł') return Math.min(base,PICK.discVal); return 0; }
+function discLabel(){ if(PICK.discType==='%') return '−'+PICK.discVal+'%'; if(PICK.discType==='zł') return '−'+PICK.discVal+' zł'; return null; }
+function renderPick(){
+  var w=WINES.find(function(x){return x.id===PICK.id;});
+  var h='<div class="pick-name" style="color:'+wColor(w.type)+'">'+w.name+'</div>';
+  if(!PICK.kind){
+    h+='<div class="pick-sub">'+w.stock+' but. w zapasie · wybierz rodzaj</div>';
+    h+='<button class="pick-btn pick-dg" onclick="pickType(\'dg\')">🥂 Degustacja — '+w.dgPrice+' zł</button>';
+    h+='<button class="pick-btn pick-bt" onclick="pickType(\'bt\')">🍾 Butelka — '+w.btPrice+' zł</button>';
+    h+='<button class="pick-cancel" onclick="closePick()">Anuluj</button>';
+  } else {
+    var base=PICK.kind==='dg'?w.dgPrice:w.btPrice;
+    var da=discAmount(base), fin=Math.max(0,base-da);
+    h+='<div class="pick-sub">'+(PICK.kind==='dg'?'🥂 Degustacja':'🍾 Butelka')+' · cena '+base+' zł</div>';
+    h+='<div class="pick-lbl">1. Płatność</div><div class="pick-seg">';
+    [['gotówka','💵','#2e7d4f'],['karta','💳','#2f6fb0'],['blik','📱','#7a3fb0']].forEach(function(p){
+      var on=PICK.pay===p[0];
+      h+='<button onclick="pickPay(\''+p[0]+'\')" style="'+(on?'background:'+p[2]+';color:#fff;border-color:'+p[2]:'')+'">'+p[1]+' '+p[0]+'</button>';
+    });
+    h+='</div>';
+    h+='<div class="pick-lbl">2. Rabat (opcjonalnie)</div><div class="pick-seg pick-disc">';
+    [['Brak',null,0],['−10%','%',10],['−20%','%',20],['−5 zł','zł',5]].forEach(function(o){
+      var on=(o[1]===null&&PICK.discType===null)||(PICK.discType===o[1]&&PICK.discVal===o[2]);
+      h+='<button class="'+(on?'on':'')+'" onclick="pickDisc('+(o[1]===null?'null':'\''+o[1]+'\'')+','+o[2]+')">'+o[0]+'</button>';
+    });
+    var isPreset=(PICK.discType===null)||(PICK.discType==='%'&&(PICK.discVal===10||PICK.discVal===20))||(PICK.discType==='zł'&&PICK.discVal===5);
+    h+='<button class="'+(!isPreset?'on':'')+'" onclick="pickDiscCustom()">Inny…</button>';
+    h+='</div>';
+    h+='<div class="pick-total">Do zapłaty: <b>'+fin+' zł</b>'+(da>0?' <span style="color:var(--green);font-size:12px">('+discLabel()+')</span>':'')+'</div>';
+    h+='<button class="pick-btn pick-confirm" onclick="confirmPick()">✓ Sprzedaj '+fin+' zł '+PAY_ICON[PICK.pay]+'</button>';
+    h+='<button class="pick-cancel" onclick="pickBack()">← Wróć do rodzaju</button>';
+  }
+  document.getElementById('pick-c').innerHTML=h;
+}
+function confirmPick(){
+  var w=WINES.find(function(x){return x.id===PICK.id;});
+  var base=PICK.kind==='dg'?w.dgPrice:w.btPrice;
+  var da=discAmount(base), id=PICK.id, kind=PICK.kind, pay=PICK.pay, dl=discLabel();
   closePick();
-  sell(id,kind);
+  sell(id,kind,{pay:pay, discAmt:da, discLabel:dl});
   var el=document.getElementById('tile-'+id);
   if(el){ el.classList.add('flash'); setTimeout(function(){el.classList.remove('flash');},400); }
 }
