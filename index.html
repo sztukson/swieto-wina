@@ -229,11 +229,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .kf-chip:active{transform:scale(.95)}
 .kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;grid-auto-rows:1fr}
 @media(min-width:560px){.kf-grid{grid-template-columns:1fr 1fr 1fr}}
-.kf-tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;justify-content:space-between;height:124px;box-sizing:border-box}
+.kf-tile{background:linear-gradient(160deg,var(--s2),var(--s1));border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;transition:transform .08s;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;justify-content:space-between;min-height:124px;box-sizing:border-box}
 .kf-tile:active{transform:scale(.93);border-color:var(--wine)}
 .kf-tile.flash{animation:kffl .4s}
 @keyframes kffl{0%{background:var(--wine)}100%{background:var(--s1)}}
-.kf-name{font-family:Georgia,serif;font-size:14px;color:var(--gold);font-weight:bold;line-height:1.2;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em}
+.kf-name{font-family:Georgia,serif;font-size:13.5px;color:var(--gold);font-weight:bold;line-height:1.2;text-align:center;overflow-wrap:anywhere;word-break:break-word;min-height:2.4em;display:flex;align-items:center;justify-content:center}
 .kf-counts{display:flex;justify-content:center;gap:16px}
 .kf-counts span{font-size:19px;font-weight:700}
 .kf-stock{font-size:11px;color:var(--muted);margin-top:5px}
@@ -1813,7 +1813,7 @@ function renderHome() {
     });
     html += '</div>';
   }
-  html += '<div style="text-align:center;color:var(--muted);font-size:10px;opacity:.45;padding:14px 0 4px">🍷 Święto Wina · wersja 18</div>';
+  html += '<div style="text-align:center;color:var(--muted);font-size:10px;opacity:.45;padding:14px 0 4px">🍷 Święto Wina · wersja 19</div>';
   html += '</div>';
   document.getElementById('cnt').innerHTML = html;
 }
