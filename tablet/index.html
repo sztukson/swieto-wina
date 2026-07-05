@@ -4370,11 +4370,28 @@ function confirmDelivery() {
 // ─────────────────────────────────────────────
 // EKSPORT
 // ─────────────────────────────────────────────
+function filteredLog() {
+  var from = document.getElementById('exp-from') ? document.getElementById('exp-from').value : '';
+  var to   = document.getElementById('exp-to')   ? document.getElementById('exp-to').value   : '';
+  return S.log.filter(function(l){
+    var d = localDate(new Date(l.ts));
+    if (from && d < from) return false;
+    if (to   && d > to)   return false;
+    return true;
+  });
+}
+
 function doExport() {
+  var today = localDate();
   var h = '<div id="exp-m" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target.id===\'exp-m\')document.getElementById(\'exp-m\').remove()">';
   h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);width:300px;padding:22px 18px">';
   h += '<div class="modal-title">📤 Eksport danych</div>';
   h += '<div class="modal-form">';
+  h += '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">📅 Zakres dat (opcjonalnie)</div>';
+  h += '<div style="display:flex;gap:8px;margin-bottom:10px">';
+  h += '<div style="flex:1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Od</div><input id="exp-from" type="date" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:12px;padding:7px 8px;outline:none"></div>';
+  h += '<div style="flex:1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">Do</div><input id="exp-to" type="date" value="' + today + '" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:12px;padding:7px 8px;outline:none"></div>';
+  h += '</div>';
   h += '<div style="font-size:11px;color:var(--muted);margin-bottom:2px">📋 Log operacji</div>';
   h += '<button class="btn-p" onclick="expCSVLog()">⬇️ CSV — Log z datą i godziną</button>';
   h += '<button class="btn-s" onclick="expXLS()">⬇️ XLS — Excel (log + wina)</button>';
@@ -4445,7 +4462,7 @@ var OP_LABELS = {
 
 function expCSVLog() {
   var rows = [['Data i czas','Wino','Operacja','Ilość','Kwota (zł)']];
-  S.log.slice().reverse().forEach(function(l){
+  filteredLog().slice().reverse().forEach(function(l){
     rows.push([
       fmtFullTime(l.ts),
       l.wine || '—',
@@ -4466,7 +4483,7 @@ function expXLS() {
 
   html += '<h2>Święto Wina — Log operacji — ' + date + '</h2>';
   html += '<table border="1" cellspacing="0"><tr><th>Data i czas</th><th>Wino</th><th>Operacja</th><th>Ilość</th><th>Kwota (zł)</th></tr>';
-  S.log.slice().reverse().forEach(function(l){
+  filteredLog().slice().reverse().forEach(function(l){
     html += '<tr><td>' + fmtFullTime(l.ts) + '</td><td>' + esc(l.wine||'—') + '</td><td>' + (OP_LABELS[l.type]||l.type) + '</td><td style="text-align:center">' + l.qty + '</td><td style="text-align:right">' + (l.amt||0).toFixed(2) + '</td></tr>';
   });
   html += '</table>';
@@ -4505,9 +4522,10 @@ function expPDF() {
   });
   html += '</table>';
 
-  html += '<h2>Pełny log operacji (' + S.log.length + ' zdarzeń)</h2>';
+  var flog = filteredLog();
+  html += '<h2>Pełny log operacji (' + flog.length + ' zdarzeń)</h2>';
   html += '<table><tr><th>Data i czas</th><th>Wino</th><th>Operacja</th><th>Ilość</th><th>Kwota</th></tr>';
-  S.log.slice().reverse().forEach(function(l){
+  flog.slice().reverse().forEach(function(l){
     html += '<tr><td>' + fmtFullTime(l.ts) + '</td><td>' + (l.wine||'—') + '</td><td>' + (OP_LABELS[l.type]||l.type) + '</td><td style="text-align:center">' + l.qty + '</td><td style="text-align:right">' + (l.amt||0).toFixed(2) + ' zł</td></tr>';
   });
   html += '</table>';
