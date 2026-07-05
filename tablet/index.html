@@ -736,7 +736,7 @@ function setPay(pt) {
 function migrateWine(w) {
   if (!w.closedBottles) w.closedBottles = [];
   if (w.dgAtLastClose === undefined) w.dgAtLastClose = 0;
-  if (!w.priceHistory) w.priceHistory = [{date: new Date().toISOString().slice(0,10), price: w.pb}];
+  if (!w.priceHistory) w.priceHistory = [{date: localDate(), price: w.pb}];
   return w;
 }
 
@@ -762,7 +762,7 @@ function mkWine(c) {
   return {id:c.id, name:c.name, type:c.type, pb:c.pb, ib:c.ib,
           ml: c.ib * BOTTLE_ML, dg:0, bt:0, rev:0,
           closedBottles: [], dgAtLastClose: 0,
-          priceHistory: [{date: new Date().toISOString().slice(0,10), price: c.pb}]};
+          priceHistory: [{date: localDate(), price: c.pb}]};
 }
 
 var SB_SAVE_TIMER = null;
@@ -819,6 +819,7 @@ function fmtTime(ts) {
   var mi = String(d.getMinutes()).padStart(2,'0');
   return dd+'.'+mm+' '+hh+':'+mi;
 }
+function localDate(d) { var t=d||new Date(); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
 function uid() { return 'i'+Date.now()+Math.random().toString(36).slice(2,5); }
 function fmtCartons(bl) {
   if (!CARTON_SIZE || CARTON_SIZE < 1) return bl + ' but.';
@@ -1274,7 +1275,7 @@ function confirmOrder() {
 // HISTORIA DNI
 // ─────────────────────────────────────────────
 function saveDay(preDate) {
-  var today = new Date().toISOString().slice(0,10);
+  var today = localDate();
   var defDate = preDate || CAL_SELECTED || today;
   var h = '<div id="saveday-m" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">';
   h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:14px">';
@@ -1298,7 +1299,7 @@ function confirmSaveDay() {
   var dateEl = document.getElementById('sd-date');
   var nameEl = document.getElementById('sd-name');
   if (!nameEl) return;
-  var date = dateEl ? dateEl.value : new Date().toISOString().slice(0,10);
+  var date = dateEl ? dateEl.value : localDate();
   var label = nameEl.value.trim() || date;
   document.getElementById('saveday-m').remove();
   if (!S.dayHistory) S.dayHistory = [];
@@ -1460,7 +1461,7 @@ function confirmChangePrice(id) {
   if (!newP || newP <= 0) return;
   document.getElementById('cprice-m').remove();
   if (!w.priceHistory) w.priceHistory = [];
-  w.priceHistory.push({date: new Date().toISOString().slice(0,10), price: newP});
+  w.priceHistory.push({date: localDate(), price: newP});
   w.pb = newP;
   save(); renderTab();
   toast('✅ Cena ' + w.name + ': ' + newP + ' zł');
@@ -2758,7 +2759,7 @@ function confirmBottleCorrection() {
 }
 
 function openManualTx() {
-  var today = new Date().toISOString().slice(0,10);
+  var today = localDate();
   var nowH  = String(new Date().getHours()).padStart(2,'0');
   var nowM  = String(new Date().getMinutes()).padStart(2,'0');
 
@@ -3315,7 +3316,7 @@ function addWine(){
   var pb=parseFloat((document.getElementById('aw-pb').value||'').replace(',','.'))||0;
   var ib=parseInt(document.getElementById('aw-ib').value)||0;
   if(!name){ toast('⚠️ Podaj nazwę wina'); return; }
-  var w={id:uid(), name:name, type:type, pb:pb, ib:ib, ml:ib*BOTTLE_ML, dg:0, bt:0, rev:0, closedBottles:[], dgAtLastClose:0, priceHistory:[{date:new Date().toISOString().slice(0,10), price:pb}]};
+  var w={id:uid(), name:name, type:type, pb:pb, ib:ib, ml:ib*BOTTLE_ML, dg:0, bt:0, rev:0, closedBottles:[], dgAtLastClose:0, priceHistory:[{date:localDate(), price:pb}]};
   S.wines.push(w);
   save();
   if(typeof sbPushWines==='function') sbPushWines();
@@ -3573,7 +3574,7 @@ function renderDni() {
 
   var MONTHS = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
   var DAYS   = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
-  var today  = new Date().toISOString().slice(0,10);
+  var today  = localDate();
 
   var DAY1 = ['P','W','Ś','C','P','S','N'];
   h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
@@ -4395,7 +4396,7 @@ function dl(name, content, mime) {
 }
 
 function expJSON() {
-  var date = new Date().toISOString().slice(0,10);
+  var date = localDate();
   var data = {
     exportDate: new Date().toISOString(),
     summary: {
@@ -4419,7 +4420,7 @@ function expCSVWines() {
   S.wines.forEach(function(w){
     rows.push([w.name, w.type, w.pb, w.ib, bottlesLeft(w), w.ml, w.dg, w.bt, w.rev.toFixed(2)]);
   });
-  dl('wina-'+new Date().toISOString().slice(0,10)+'.csv', '﻿'+rows.map(function(r){ return r.join(';'); }).join('\n'), 'text/csv;charset=utf-8');
+  dl('wina-'+localDate()+'.csv', '﻿'+rows.map(function(r){ return r.join(';'); }).join('\n'), 'text/csv;charset=utf-8');
   toast('✅ CSV pobrany');
 }
 
@@ -4453,14 +4454,14 @@ function expCSVLog() {
       (l.amt||0).toFixed(2)
     ]);
   });
-  dl('log-'+new Date().toISOString().slice(0,10)+'.csv', '﻿'+rows.map(function(r){
+  dl('log-'+localDate()+'.csv', '﻿'+rows.map(function(r){
     return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(';');
   }).join('\n'), 'text/csv;charset=utf-8');
   toast('✅ CSV pobrany');
 }
 
 function expXLS() {
-  var date = new Date().toISOString().slice(0,10);
+  var date = localDate();
   var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>th{background:#8B1A2E;color:#fff;padding:6px 10px;font-size:12px}td{padding:5px 10px;font-size:11px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#f9f5f5}</style></head><body>';
 
   html += '<h2>Święto Wina — Log operacji — ' + date + '</h2>';
@@ -4482,7 +4483,7 @@ function expXLS() {
 }
 
 function expPDF() {
-  var date = new Date().toISOString().slice(0,10);
+  var date = localDate();
   var rev = totalRev(), dg = totalDg(), bt = totalBt();
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Święto Wina — Raport ' + date + '</title>';
   html += '<style>body{font-family:Arial,sans-serif;font-size:11px;color:#222;margin:20px}h1{color:#8B1A2E;font-size:18px;margin-bottom:4px}h2{color:#8B1A2E;font-size:13px;margin:16px 0 6px;border-bottom:2px solid #8B1A2E;padding-bottom:3px}.sum{display:flex;gap:20px;margin:10px 0;flex-wrap:wrap}.sc{background:#f5f0ef;border:1px solid #ddd;border-radius:6px;padding:8px 14px;text-align:center}.sc-v{font-size:20px;font-weight:bold;color:#8B1A2E}.sc-l{font-size:10px;color:#666;margin-top:2px}table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10px}th{background:#8B1A2E;color:#fff;padding:4px 8px;text-align:left}td{padding:3px 8px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#faf7f7}.log-ok{color:#27ae60}.log-wine{color:#8B1A2E}.log-glass{color:#2980b9}@media print{.no-print{display:none}}</style>';
@@ -4793,7 +4794,7 @@ function acceptBundle() {
 // Alert: poprzedni dzień niezamknięty
 (function checkPrevDay() {
   if (OFFERED_BUNDLE) return; // nie nakładaj alertu na powitanie z danymi
-  var today = new Date().toISOString().slice(0,10);
+  var today = localDate();
   var yest  = new Date(); yest.setDate(yest.getDate()-1);
   var yesterday = yest.toISOString().slice(0,10);
   var hist = S.dayHistory || [];
