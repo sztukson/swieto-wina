@@ -4381,10 +4381,13 @@ function importData() {
         if (!parsed.wines && !parsed.log && !parsed.dayHistory) throw new Error('Nieprawidłowy format');
         localStorage.setItem('sw_v3', JSON.stringify(parsed));
         load(); // uruchamia wszystkie migracje (migrateWine, cash.initial, bags, dayHistory…)
+        // Wyślij zaimportowane dane do chmury
+        (S.dayHistory || []).forEach(function(d){ sbPushDay(d); });
+        sbPushWines();
         var m = document.getElementById('set-m');
         if (m) m.remove();
         var nDni = (S.dayHistory||[]).length;
-        toast('✅ Dane wczytane' + (nDni ? ' — ' + nDni + ' dni' : ''));
+        toast('✅ Dane wczytane' + (nDni ? ' — ' + nDni + ' dni' : '') + ' i wysłane do chmury');
         renderTab();
       } catch(err) {
         toast('❌ Błąd: ' + err.message);
