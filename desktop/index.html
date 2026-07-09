@@ -193,13 +193,18 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div style="background:var(--s1);border:1px solid rgba(200,168,75,.35);border-radius:20px;padding:28px 24px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:16px;text-align:center">
     <div style="font-size:48px">🍷</div>
     <div style="font-family:Georgia,serif;font-size:20px;color:var(--gold)">Święto Wina</div>
-    <!-- Login: email + hasło -->
     <div id="sb-step1" style="display:flex;flex-direction:column;gap:10px">
-      <input id="sb-email-input" type="email" placeholder="twoj@email.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:15px;padding:12px;outline:none;text-align:center" onkeydown="if(event.key==='Enter')document.getElementById('sb-pass-input').focus()">
-      <input id="sb-pass-input" type="password" placeholder="hasło" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:15px;padding:12px;outline:none;text-align:center" onkeydown="if(event.key==='Enter')sbLogin()">
-      <button id="sb-send-btn" onclick="sbLogin()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:13px;font-size:14px;font-weight:700;cursor:pointer">Zaloguj się →</button>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">Wpisz adres e-mail, wyślemy kod dostępu.</div>
+      <input id="sb-email-input" type="email" placeholder="twoj@email.com" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:15px;padding:12px;outline:none;text-align:center" onkeydown="if(event.key==='Enter')sbSendOtp()">
+      <button id="sb-send-btn" onclick="sbSendOtp()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:13px;font-size:14px;font-weight:700;cursor:pointer">Wyślij kod →</button>
       <div style="display:flex;align-items:center;gap:8px;margin:2px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--muted)">lub</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
       <button onclick="sbOfflineMode()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:11px;font-size:13px;font-weight:600;cursor:pointer">📴 Tryb offline (bez synchronizacji)</button>
+    </div>
+    <div id="sb-step2" style="display:none;flex-direction:column;gap:10px">
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">Wpisz kod wysłany na <strong id="sb-sent-email" style="color:var(--text)"></strong></div>
+      <input id="sb-otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:22px;padding:12px;outline:none;text-align:center;letter-spacing:8px" onkeydown="if(event.key==='Enter')sbVerifyOtp()">
+      <button id="sb-verify-btn" onclick="sbVerifyOtp()" style="background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:13px;font-size:14px;font-weight:700;cursor:pointer">Zaloguj się ✓</button>
+      <button onclick="document.getElementById('sb-step1').style.display='flex';document.getElementById('sb-step2').style.display='none'" style="background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:4px">← Zmień email</button>
     </div>
     <div id="sb-login-err" style="display:none;font-size:12px;color:var(--red);line-height:1.4"></div>
   </div>
