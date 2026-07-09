@@ -521,13 +521,13 @@ function sbPushDay(snap) {
 
 function sbDeleteDay(id) {
   if (!_sb || !SB_USER) return;
-  _sb.from('days').delete().eq('id', id).catch(function(e){ console.error('sbDeleteDay:', e); });
+  _sb.from('days').delete().eq('id', id).then(function(r){ if(r.error) console.error('sbDeleteDay:', r.error); });
 }
 
 function sbPushWines() {
   if (!_sb || !SB_USER) return;
   var rows = S.wines.map(function(w){ return { id: w.id, data: w, updated_at: new Date().toISOString() }; });
-  _sb.from('wines').upsert(rows).catch(function(e){ console.error('sbPushWines:', e); });
+  _sb.from('wines').upsert(rows).then(function(r){ if(r.error) console.error('sbPushWines:', r.error); });
 }
 
 function sbShowLogin() {
