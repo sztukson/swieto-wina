@@ -924,6 +924,7 @@ function addLog(type, wineName, qty, amt, extra) {
   var entry = {id:uid(), ts:Date.now(), type:type, wine:wineName||null, qty:qty, amt:amt||0};
   if (extra) Object.assign(entry, extra);
   entry.by = (typeof SB_USER!=='undefined' && SB_USER) ? SB_USER.email : null;
+  if (!navigator.onLine) entry.off = 1;
   S.log.unshift(entry);
   SB_SEEN[entry.id]=1;
   if (entry.ts>SB_LASTOP) SB_LASTOP=entry.ts;
@@ -2903,6 +2904,7 @@ function confirmManualTx() {
     qty: qty, amt: amt, pay: pay
   };
   _me.by = (typeof SB_USER!=='undefined' && SB_USER) ? SB_USER.email : null;
+  if (!navigator.onLine) _me.off = 1;
   S.log.unshift(_me);
   SB_SEEN[_me.id]=1;
   if(_me.ts>SB_LASTOP) SB_LASTOP=_me.ts;
@@ -2988,7 +2990,7 @@ function renderLog() {
       var payIcon = l.pay ? (PAY_ICONS[l.pay]||'') + ' ' : '';
       h += '<span class="le-ico">' + (OP_ICONS[l.type]||'📌') + '</span>';
       h += '<div class="le-body"><div class="le-title">' + (OP_LABELS[l.type]||esc(l.type)) + (l.wine?' · '+esc(l.wine):'') + '</div>';
-      h += '<div class="le-meta">' + fmtTime(l.ts) + (l.qty?' · '+l.qty+' szt.':'') + (l.pay?' · '+payIcon+l.pay:'') + (l.by?' · 👤 '+esc(l.by.split('@')[0]):'') + '</div></div>';
+      h += '<div class="le-meta">' + fmtTime(l.ts) + (l.qty?' · '+l.qty+' szt.':'') + (l.pay?' · '+payIcon+l.pay:'') + (l.by?' · 👤 '+esc(l.by.split('@')[0]):'') + (l.off?' · 📴 offline':'') + '</div></div>';
       h += '<span class="le-amt ' + (ap?'pos':an?'neg':'neu') + '">' + (l.amt!==0?(ap?'+':'')+fmtN(l.amt)+' zł':'—') + '</span>';
       h += '<button onclick="deleteLog(\'' + l.id + '\')" style="background:none;border:none;color:var(--muted);font-size:16px;padding:4px 6px;cursor:pointer;flex-shrink:0;border-radius:6px;margin-left:2px" title="Usuń wpis">🗑️</button>';
       h += '</div>';
