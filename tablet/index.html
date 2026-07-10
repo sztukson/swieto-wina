@@ -592,16 +592,10 @@ function sbAdoptSnapshot(d){
   renderTab();
 }
 
-function applyRemoteOp(e){
+// Efekt operacji na stanie (bez wpisu do logu)
+function sbApplyEffect(e){
   var w = e.wine ? S.wines.find(function(x){ return x.name===e.wine; }) : null;
   var g = S.glasses;
-  if (e.type==='sync-full'){
-    _sb.from('live_state').select('data').eq('user_email','shared').maybeSingle().then(function(r){
-      var d = r && r.data && r.data.data;
-      if (d && (d._opTs||0) >= (S._opTs||0)) sbAdoptSnapshot(d);
-    });
-    return;
-  }
   switch(e.type){
     case 'degustacja': if(!w) break; var qd=e.qty||1; w.ml=Math.max(0,w.ml-TASTING_ML*qd); w.dg+=qd; w.rev+=(e.amt||0); break;
     case 'butelka': if(!w) break; var qb=e.qty||1; w.ml=Math.max(0,w.ml-BOTTLE_ML*qb); w.bt+=qb; w.rev+=(e.amt||0); break;
@@ -623,7 +617,7 @@ function applyRemoteOp(e){
       break;
     case 'wydanie': g.issued++; break;
     case 'zwrot': g.returned++; break;
-    case 'kaucja+': case 'kaucja-': break; // informacyjne — stan zmienia wydanie/zwrot
+    case 'kaucja+': case 'kaucja-': break;
     case 'torba': if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold++; S.bags.rev+=(e.amt||0); break;
     case 'umycie': g.washed=(g.washed||0)+(e.qty||0); break;
     case 'rozbity': g.broken=(g.broken||0)+1; TOTAL_GLASSES=Math.max(0,TOTAL_GLASSES-1); localStorage.setItem('sw_total_glasses',TOTAL_GLASSES); break;
@@ -631,10 +625,77 @@ function applyRemoteOp(e){
     case 'reset-kieliszki': g.issued=0; g.returned=0; g.washed=0; g.broken=0; break;
     case 'wpłata': case 'wypłata': S.cash.ops.push({id:e.id, type:e.type, amt:Math.abs(e.amt||0), desc:e.desc||'—', who:e.who||'', ts:e.ts}); break;
     case 'dostawa': if(!w) break; w.ml+=(e.qty||0)*BOTTLE_ML; break;
-    case 'log-del': S.log = S.log.filter(function(l){ return l.id!==e.ref; }); return;
-    case 'log-restore': if(e.entry && !S.log.some(function(l){ return l.id===e.entry.id; })) S.log.unshift(e.entry); return;
     default: break;
   }
+}
+
+// Cofnięcie efektu operacji (odwrotność sbApplyEffect)
+function sbRevertEffect(e){
+  var w = e.wine ? S.wines.find(function(x){ return x.name===e.wine; }) : null;
+  var g = S.glasses;
+  switch(e.type){
+    case 'degustacja': if(!w) break; var qd=e.qty||1; w.ml+=TASTING_ML*qd; w.dg=Math.max(0,w.dg-qd); w.rev-=(e.amt||0); break;
+    case 'butelka': if(!w) break; var qb=e.qty||1; w.ml+=BOTTLE_ML*qb; w.bt=Math.max(0,w.bt-qb); w.rev-=(e.amt||0); break;
+    case 'wlasciciel': if(!w) break; w.ml+=(e.qty||0)*BOTTLE_ML; break;
+    case 'korekta':
+      if(e.sub==='dg'){ if(!w) break; w.ml=Math.max(0,w.ml-TASTING_ML); w.dg++; w.rev-=(e.amt||0); }
+      else if(e.sub==='bt'){ if(!w) break; w.ml=Math.max(0,w.ml-BOTTLE_ML); w.bt++; w.rev-=(e.amt||0); }
+      else if(e.sub==='bag'){ if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold++; S.bags.rev-=(e.amt||0); }
+      else if(e.sub==='wydanie'){ g.issued++; }
+      else if(e.sub==='zwrot'){ g.returned++; }
+      else if(!e.sub && w && e.qty>0){ w.ml+=e.qty*BOTTLE_ML; }
+      break;
+    case 'butelka_zamknięta':
+      if(!w) break;
+      var t=e.qty||0;
+      for(var i=w.closedBottles.length-1;i>=0;i--){
+        if(w.closedBottles[i].tastings===t){ w.ml+=(w.closedBottles[i].mlCorrection||0); w.closedBottles.splice(i,1); break; }
+      }
+      w.dgAtLastClose=Math.max(0,w.dgAtLastClose-t);
+      break;
+    case 'wydanie': g.issued=Math.max(0,g.issued-1); break;
+    case 'zwrot': g.returned=Math.max(0,g.returned-1); break;
+    case 'kaucja+': case 'kaucja-': break;
+    case 'torba': if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold=Math.max(0,S.bags.sold-1); S.bags.rev-=(e.amt||0); break;
+    case 'umycie': g.washed=Math.max(0,(g.washed||0)-(e.qty||0)); break;
+    case 'rozbity': g.broken=Math.max(0,(g.broken||0)-1); TOTAL_GLASSES++; localStorage.setItem('sw_total_glasses',TOTAL_GLASSES); break;
+    case 'dostawa-kieliszki': TOTAL_GLASSES=Math.max(0,TOTAL_GLASSES-(e.qty||0)); localStorage.setItem('sw_total_glasses',TOTAL_GLASSES); break;
+    case 'reset-kieliszki': break; // nieodwracalne
+    case 'wpłata': case 'wypłata':
+      var ci = -1;
+      for(var j=0;j<S.cash.ops.length;j++){
+        var o=S.cash.ops[j];
+        if(o.type===e.type && o.amt===Math.abs(e.amt||0) && Math.abs((o.ts||0)-(e.ts||0))<10000){ ci=j; break; }
+      }
+      if(ci>=0) S.cash.ops.splice(ci,1);
+      break;
+    case 'dostawa': if(!w) break; w.ml=Math.max(0,w.ml-(e.qty||0)*BOTTLE_ML); break;
+    default: break;
+  }
+}
+
+function applyRemoteOp(e){
+  if (e.type==='sync-full'){
+    _sb.from('live_state').select('data').eq('user_email','shared').maybeSingle().then(function(r){
+      var d = r && r.data && r.data.data;
+      if (d && (d._opTs||0) >= (S._opTs||0)) sbAdoptSnapshot(d);
+    });
+    return;
+  }
+  if (e.type==='log-del'){
+    var delEntry = e.deleted || S.log.find(function(l){ return l.id===e.ref; });
+    S.log = S.log.filter(function(l){ return l.id!==e.ref; });
+    if (e.reverted && delEntry) sbRevertEffect(delEntry);
+    return;
+  }
+  if (e.type==='log-restore'){
+    if(e.entry && !S.log.some(function(l){ return l.id===e.entry.id; })){
+      if (e.reapplied) sbApplyEffect(e.entry);
+      S.log.unshift(e.entry);
+    }
+    return;
+  }
+  sbApplyEffect(e);
   S.log.unshift(e);
 }
 
@@ -3179,6 +3240,7 @@ function deleteLog(id) {
   var h = '<div id="del-log-m" onclick="if(event.target.id===\'del-log-m\')document.getElementById(\'del-log-m\').remove()" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">';
   h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:12px">';
   h += '<div style="font-size:15px;font-weight:700;color:var(--red)">🗑️ Usuń wpis?</div>';
+  h += '<div style="font-size:12px;color:var(--muted);line-height:1.5">Usunięcie cofa też efekt operacji (liczniki, stan, kasa). Wpis trafi do „Usunięte" — można przywrócić.</div>';
   h += '<div style="background:var(--s2);border-radius:8px;padding:10px 12px">';
   h += '<div style="font-size:13px;font-weight:600;color:var(--text)">' + esc(label) + amt + '</div>';
   h += '<div style="font-size:11px;color:var(--muted);margin-top:3px">' + fmtTime(entry.ts) + '</div>';
@@ -3198,12 +3260,13 @@ function confirmDeleteLog(id) {
   if (!entry) return;
   var idx = S.log.findIndex(function(l){ return l.id === id; });
   S.log.splice(idx, 1);
-  var delOp = {id:uid(), ts:Date.now(), type:'log-del', ref:id, by:(typeof SB_USER!=='undefined' && SB_USER)?SB_USER.email:null, deleted:entry};
+  sbRevertEffect(entry);
+  var delOp = {id:uid(), ts:Date.now(), type:'log-del', ref:id, reverted:1, by:(typeof SB_USER!=='undefined' && SB_USER)?SB_USER.email:null, deleted:entry};
   SB_SEEN[delOp.id]=1;
   if(delOp.ts>SB_LASTOP) SB_LASTOP=delOp.ts;
   if (typeof sbPushOp==='function') sbPushOp(delOp);
   save(); renderLog();
-  toast('🗑️ Wpis usunięty');
+  toast('🗑️ Wpis usunięty i akcja cofnięta');
 }
 
 var DELETED_CACHE = null;
@@ -3223,13 +3286,14 @@ function fetchDeleted() {
 function restoreLog(entryJson) {
   var entry = JSON.parse(entryJson);
   if (S.log.some(function(l){ return l.id === entry.id; })) { toast('Ten wpis już jest w logu'); return; }
+  sbApplyEffect(entry);
   S.log.unshift(entry);
-  var op = {id:uid(), ts:Date.now(), type:'log-restore', entry:entry, by:(typeof SB_USER!=='undefined' && SB_USER)?SB_USER.email:null};
+  var op = {id:uid(), ts:Date.now(), type:'log-restore', entry:entry, reapplied:1, by:(typeof SB_USER!=='undefined' && SB_USER)?SB_USER.email:null};
   SB_SEEN[op.id]=1;
   if(op.ts>SB_LASTOP) SB_LASTOP=op.ts;
   if (typeof sbPushOp==='function') sbPushOp(op);
-  save(); renderLog();
-  toast('↩️ Wpis przywrócony do logu');
+  save(); renderTab();
+  toast('↩️ Wpis przywrócony — akcja doliczona');
 }
 
 // ─────────────────────────────────────────────
