@@ -519,6 +519,7 @@ function applyRemoteOp(e){
     case 'reset-kieliszki': g.issued=0; g.returned=0; g.washed=0; g.broken=0; break;
     case 'wpłata': case 'wypłata': S.cash.ops.push({id:e.id, type:e.type, amt:Math.abs(e.amt||0), desc:e.desc||'—', who:e.who||'', ts:e.ts}); break;
     case 'dostawa': if(!w) break; w.ml+=(e.qty||0)*BOTTLE_ML; break;
+    case 'log-del': S.log = S.log.filter(function(l){ return l.id!==e.ref; }); return;
     default: break;
   }
   S.log.unshift(e);
@@ -922,6 +923,7 @@ var OP_ICONS = {
 function addLog(type, wineName, qty, amt, extra) {
   var entry = {id:uid(), ts:Date.now(), type:type, wine:wineName||null, qty:qty, amt:amt||0};
   if (extra) Object.assign(entry, extra);
+  entry.by = (typeof SB_USER!=='undefined' && SB_USER) ? SB_USER.email : null;
   S.log.unshift(entry);
   SB_SEEN[entry.id]=1;
   if (entry.ts>SB_LASTOP) SB_LASTOP=entry.ts;
@@ -2900,6 +2902,7 @@ function confirmManualTx() {
     ts: tms, type: type, wine: w.name,
     qty: qty, amt: amt, pay: pay
   };
+  _me.by = (typeof SB_USER!=='undefined' && SB_USER) ? SB_USER.email : null;
   S.log.unshift(_me);
   SB_SEEN[_me.id]=1;
   if(_me.ts>SB_LASTOP) SB_LASTOP=_me.ts;
@@ -2985,7 +2988,7 @@ function renderLog() {
       var payIcon = l.pay ? (PAY_ICONS[l.pay]||'') + ' ' : '';
       h += '<span class="le-ico">' + (OP_ICONS[l.type]||'📌') + '</span>';
       h += '<div class="le-body"><div class="le-title">' + (OP_LABELS[l.type]||esc(l.type)) + (l.wine?' · '+esc(l.wine):'') + '</div>';
-      h += '<div class="le-meta">' + fmtTime(l.ts) + (l.qty?' · '+l.qty+' szt.':'') + (l.pay?' · '+payIcon+l.pay:'') + '</div></div>';
+      h += '<div class="le-meta">' + fmtTime(l.ts) + (l.qty?' · '+l.qty+' szt.':'') + (l.pay?' · '+payIcon+l.pay:'') + (l.by?' · 👤 '+esc(l.by.split('@')[0]):'') + '</div></div>';
       h += '<span class="le-amt ' + (ap?'pos':an?'neg':'neu') + '">' + (l.amt!==0?(ap?'+':'')+fmtN(l.amt)+' zł':'—') + '</span>';
       h += '<button onclick="deleteLog(\'' + l.id + '\')" style="background:none;border:none;color:var(--muted);font-size:16px;padding:4px 6px;cursor:pointer;flex-shrink:0;border-radius:6px;margin-left:2px" title="Usuń wpis">🗑️</button>';
       h += '</div>';
@@ -3026,6 +3029,10 @@ function confirmDeleteLog(id) {
   if (!entry) return;
   var idx = S.log.findIndex(function(l){ return l.id === id; });
   S.log.splice(idx, 1);
+  var delOp = {id:uid(), ts:Date.now(), type:'log-del', ref:id, by:(typeof SB_USER!=='undefined' && SB_USER)?SB_USER.email:null, deleted:entry};
+  SB_SEEN[delOp.id]=1;
+  if(delOp.ts>SB_LASTOP) SB_LASTOP=delOp.ts;
+  if (typeof sbPushOp==='function') sbPushOp(delOp);
   save(); renderLog();
   toast('🗑️ Wpis usunięty');
 }
