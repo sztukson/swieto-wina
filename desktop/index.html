@@ -440,10 +440,26 @@ function sbSeenInit(){
   (S.log||[]).forEach(function(l){ if(l.id) SB_SEEN[l.id]=1; if(l.ts && l.ts>SB_LASTOP) SB_LASTOP=l.ts; });
 }
 
+var SB_OUTBOX = (function(){ try { return JSON.parse(localStorage.getItem('sw_outbox')||'[]'); } catch(e){ return []; } })();
+function sbOutboxSave(){ try { localStorage.setItem('sw_outbox', JSON.stringify(SB_OUTBOX)); } catch(e){} }
+
 function sbPushOp(entry){
-  if(!_sb || !SB_USER) return;
-  _sb.from('ops').insert({ id: entry.id, ts: entry.ts, device: SB_DEVICE, user_email: SB_USER.email, entry: entry })
-    .then(function(r){ if(r.error) console.error('sbPushOp:', r.error.message); });
+  SB_OUTBOX.push(entry);
+  sbOutboxSave();
+  sbFlushOutbox();
+}
+
+function sbFlushOutbox(){
+  if(!_sb || !SB_USER || !SB_OUTBOX.length) return;
+  var batch = SB_OUTBOX.slice(0, 100);
+  var rows = batch.map(function(e){ return { id:e.id, ts:e.ts, device:SB_DEVICE, user_email:SB_USER.email, entry:e }; });
+  _sb.from('ops').upsert(rows, {onConflict:'id', ignoreDuplicates:true}).then(function(r){
+    if(r.error){ srvDot('err'); return; }
+    SB_OUTBOX = SB_OUTBOX.filter(function(e){ return !batch.some(function(b){ return b.id===e.id; }); });
+    sbOutboxSave();
+    srvDot('on');
+    if(SB_OUTBOX.length) sbFlushOutbox();
+  });
 }
 
 function sbSyncFull(){
@@ -510,6 +526,7 @@ function applyRemoteOp(e){
 
 function sbFetchOps(){
   if(!_sb || !SB_USER) return;
+  sbFlushOutbox();
   var since = Math.max(0, SB_LASTOP - 600000); // 10 min marginesu na spóźnione wpisy
   _sb.from('ops').select('*').gt('ts', since).order('ts', {ascending:true}).limit(500)
     .then(function(r){
@@ -545,6 +562,15 @@ function startOpsPolling(){
   SB_POLL_TIMER = setInterval(sbFetchOps, 4000);
   sbFetchOps();
 }
+
+window.addEventListener('online', function(){
+  toast('🌐 Internet wrócił — wysyłam zaległe operacje…');
+  sbFlushOutbox(); sbFetchOps(); if(typeof sbPushLive==='function') sbPushLive();
+});
+window.addEventListener('offline', function(){
+  toast('📴 Brak internetu — liczę lokalnie, wyślę po połączeniu', 4000);
+  srvDot('err');
+});
 
 
 function sbShowLogin() {
