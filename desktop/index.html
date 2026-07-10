@@ -371,28 +371,34 @@ function sbCheckAccess() {
 function sbLoadData() {
   if (!_sb) return;
   Promise.all([
+    _sb.from('live_state').select('data').eq('user_email','shared').maybeSingle(),
     _sb.from('wines').select('*'),
     _sb.from('days').select('*')
-  ]).then(function(results) {
-    var winesRes = results[0];
-    var daysRes  = results[1];
-
-    // Scal wina: Supabase jest kanoniczne
-    if (winesRes.data && winesRes.data.length > 0) {
-      var sbWines = winesRes.data.map(function(r){ return r.data; });
-      S.wines = sbWines.map(migrateWine);
+  ]).then(function(res) {
+    var snapRes = res[0], winesRes = res[1], daysRes = res[2];
+    var snap = snapRes && snapRes.data && snapRes.data.data;
+    if (snap && (snap._opTs||0) >= (S._opTs||0)) {
+      try { localStorage.setItem('sw_v3', JSON.stringify(snap)); } catch(e){}
+      load();
+      if (snap._totalGlasses) { TOTAL_GLASSES = snap._totalGlasses; localStorage.setItem('sw_total_glasses', TOTAL_GLASSES); }
+    } else if (!snap) {
+      // brak snapshotu w chmurze — stary tryb: wina z chmury kanoniczne
+      if (winesRes.data && winesRes.data.length > 0) {
+        S.wines = winesRes.data.map(function(r){ return r.data; }).map(migrateWine);
+      }
     }
-
-    // Scal dni: merge lokalnych + Supabase (Supabase wygrywa przy konflikcie id)
+    // Dni: merge lokalnych + Supabase
     if (daysRes.data && daysRes.data.length > 0) {
       var sbDays = daysRes.data.map(function(r){ return r.day_data; });
       var merged = {};
       (S.dayHistory || []).forEach(function(d){ merged[d.id] = d; });
       sbDays.forEach(function(d){ merged[d.id] = d; });
       S.dayHistory = Object.values(merged).sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-      try { localStorage.setItem('sw_v3', JSON.stringify(S)); } catch(e){}
     }
+    try { localStorage.setItem('sw_v3', JSON.stringify(S)); } catch(e){}
     renderTab();
+    startOpsPolling();
+    sbPushLive();
   }).catch(function(e) {
     console.error('sbLoadData error:', e);
     srvDot('err');
@@ -416,7 +422,120 @@ function sbPushWines() {
   if (!_sb || !SB_USER) return;
   var rows = S.wines.map(function(w){ return { id: w.id, data: w, updated_at: new Date().toISOString() }; });
   _sb.from('wines').upsert(rows).then(function(r){ if(r.error) console.error('sbPushWines:', r.error); });
+  if (typeof sbSyncFull==='function') sbSyncFull();
 }
+
+// ─────────────────────────────────────────────
+// LIVE SYNC — dziennik operacji w chmurze
+// Każde kliknięcie -> wiersz w tabeli ops; inne urządzenia
+// pobierają nowe wiersze co 4 s i doliczają u siebie.
+// ─────────────────────────────────────────────
+var SB_DEVICE = (function(){ var d=localStorage.getItem('sw_device'); if(!d){ d=uid(); localStorage.setItem('sw_device',d); } return d; })();
+var SB_SEEN = {};
+var SB_LASTOP = 0;
+var SB_POLL_TIMER = null;
+
+function sbSeenInit(){
+  SB_SEEN = {};
+  (S.log||[]).forEach(function(l){ if(l.id) SB_SEEN[l.id]=1; if(l.ts && l.ts>SB_LASTOP) SB_LASTOP=l.ts; });
+}
+
+function sbPushOp(entry){
+  if(!_sb || !SB_USER) return;
+  _sb.from('ops').insert({ id: entry.id, ts: entry.ts, device: SB_DEVICE, user_email: SB_USER.email, entry: entry })
+    .then(function(r){ if(r.error) console.error('sbPushOp:', r.error.message); });
+}
+
+function sbSyncFull(){
+  if(!_sb || !SB_USER) return;
+  sbPushLive();
+  var e = {id:uid(), ts:Date.now(), type:'sync-full'};
+  SB_SEEN[e.id]=1;
+  if(e.ts>SB_LASTOP) SB_LASTOP=e.ts;
+  sbPushOp(e);
+}
+
+function sbAdoptSnapshot(d){
+  if(!d) return;
+  try { localStorage.setItem('sw_v3', JSON.stringify(d)); } catch(err){}
+  load();
+  if (d._totalGlasses){ TOTAL_GLASSES = d._totalGlasses; localStorage.setItem('sw_total_glasses', TOTAL_GLASSES); }
+  sbSeenInit();
+  renderTab();
+}
+
+function applyRemoteOp(e){
+  var w = e.wine ? S.wines.find(function(x){ return x.name===e.wine; }) : null;
+  var g = S.glasses;
+  if (e.type==='sync-full'){
+    _sb.from('live_state').select('data').eq('user_email','shared').maybeSingle().then(function(r){
+      var d = r && r.data && r.data.data;
+      if (d && (d._opTs||0) >= (S._opTs||0)) sbAdoptSnapshot(d);
+    });
+    return;
+  }
+  switch(e.type){
+    case 'degustacja': if(!w) break; w.ml=Math.max(0,w.ml-TASTING_ML); w.dg++; w.rev+=(e.amt||0); break;
+    case 'butelka': if(!w) break; w.ml=Math.max(0,w.ml-BOTTLE_ML); w.bt++; w.rev+=(e.amt||0); break;
+    case 'korekta':
+      if(e.sub==='dg'){ if(!w) break; w.ml+=TASTING_ML; w.dg=Math.max(0,w.dg-1); w.rev+=(e.amt||0); }
+      else if(e.sub==='bt'){ if(!w) break; w.ml+=BOTTLE_ML; w.bt=Math.max(0,w.bt-1); w.rev+=(e.amt||0); }
+      else if(e.sub==='bag'){ if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold=Math.max(0,S.bags.sold-1); S.bags.rev+=(e.amt||0); }
+      else if(e.sub==='wydanie'){ g.issued=Math.max(0,g.issued-1); }
+      else if(e.sub==='zwrot'){ g.returned=Math.max(0,g.returned-1); }
+      break;
+    case 'butelka_zamknięta':
+      if(!w) break;
+      var t=e.qty||0, corr=BOTTLE_ML - t*TASTING_ML, applied=0;
+      if(corr!==0){ var before=w.ml; w.ml=Math.max(0,w.ml-corr); applied=before-w.ml; }
+      w.closedBottles.push({ts:e.ts, tastings:t, avgMl:t>0?Math.round((BOTTLE_ML/t)*10)/10:0, mlCorrection:applied});
+      w.dgAtLastClose=w.dg;
+      break;
+    case 'wydanie': g.issued++; break;
+    case 'zwrot': g.returned++; break;
+    case 'kaucja+': case 'kaucja-': break; // informacyjne — stan zmienia wydanie/zwrot
+    case 'torba': if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold++; S.bags.rev+=(e.amt||0); break;
+    case 'umycie': g.washed=(g.washed||0)+(e.qty||0); break;
+    case 'rozbity': g.broken=(g.broken||0)+1; TOTAL_GLASSES=Math.max(0,TOTAL_GLASSES-1); localStorage.setItem('sw_total_glasses',TOTAL_GLASSES); break;
+    case 'dostawa-kieliszki': TOTAL_GLASSES+=(e.qty||0); localStorage.setItem('sw_total_glasses',TOTAL_GLASSES); break;
+    case 'reset-kieliszki': g.issued=0; g.returned=0; g.washed=0; g.broken=0; break;
+    case 'wpłata': case 'wypłata': S.cash.ops.push({id:e.id, type:e.type, amt:Math.abs(e.amt||0), desc:e.desc||'—', who:e.who||'', ts:e.ts}); break;
+    case 'dostawa': if(!w) break; w.ml+=(e.qty||0)*BOTTLE_ML; break;
+    default: break;
+  }
+  S.log.unshift(e);
+}
+
+function sbFetchOps(){
+  if(!_sb || !SB_USER) return;
+  var since = Math.max(0, SB_LASTOP - 600000); // 10 min marginesu na spóźnione wpisy
+  _sb.from('ops').select('*').gt('ts', since).order('ts', {ascending:true}).limit(500)
+    .then(function(r){
+      if(r.error || !r.data) return;
+      var applied = 0;
+      r.data.forEach(function(row){
+        var e = row.entry || {};
+        if(!e.id || SB_SEEN[e.id]) return;
+        SB_SEEN[e.id]=1;
+        if(e.ts && e.ts>SB_LASTOP) SB_LASTOP=e.ts;
+        if(row.device===SB_DEVICE) return;
+        applyRemoteOp(e);
+        applied++;
+      });
+      if(applied>0){
+        try { localStorage.setItem('sw_v3', JSON.stringify(S)); } catch(err){}
+        renderTab();
+      }
+    });
+}
+
+function startOpsPolling(){
+  sbSeenInit();
+  clearInterval(SB_POLL_TIMER);
+  SB_POLL_TIMER = setInterval(sbFetchOps, 4000);
+  sbFetchOps();
+}
+
 
 function sbShowLogin() {
   var ov = document.getElementById('sb-login-overlay');
@@ -664,12 +783,13 @@ function save() {
 
 function sbPushLive() {
   if (!_sb || !SB_USER) return;
+  S._opTs = SB_LASTOP || Date.now();
+  S._totalGlasses = TOTAL_GLASSES;
   _sb.from('live_state').upsert({
-    user_email: SB_USER.email,
+    user_email: 'shared',
     data: S,
     updated_at: new Date().toISOString()
-  }).then(function(){ srvDot('on'); })
-    .catch(function(){ srvDot('err'); });
+  }).then(function(r){ if(r.error){ console.error('sbPushLive:', r.error.message); srvDot('err'); } else srvDot('on'); });
 }
 
 function load() {
@@ -767,6 +887,9 @@ function addLog(type, wineName, qty, amt, extra) {
   var entry = {id:uid(), ts:Date.now(), type:type, wine:wineName||null, qty:qty, amt:amt||0};
   if (extra) Object.assign(entry, extra);
   S.log.unshift(entry);
+  SB_SEEN[entry.id]=1;
+  if (entry.ts>SB_LASTOP) SB_LASTOP=entry.ts;
+  if (typeof sbPushOp==='function') sbPushOp(entry);
 }
 
 // ─────────────────────────────────────────────
@@ -1203,6 +1326,7 @@ function confirmSaveDay() {
   S.dayHistory.push(snap);
   save();
   sbPushDay(snap);
+  if (typeof sbSyncFull==='function') sbSyncFull();
   showNewDayModal(label);
 }
 
@@ -1279,6 +1403,7 @@ function startNewDay() {
 
   CAL_SELECTED = null;
   save();
+  if (typeof sbSyncFull==='function') sbSyncFull();
 
   if (bottleChoice === 'new') {
     showBottleInputModal();
@@ -1373,11 +1498,13 @@ function undoBag() {
 function undoIssue() {
   if (S.glasses.issued === 0) return;
   S.glasses.issued--;
+  addLog('korekta', null, -1, 0, {sub:'wydanie'});
   toast('↩️ Cofnięto wydanie'); save(); renderTab();
 }
 function undoReturn() {
   if (S.glasses.returned === 0) return;
   S.glasses.returned--;
+  addLog('korekta', null, -1, 0, {sub:'zwrot'});
   toast('↩️ Cofnięto zwrot'); save(); renderTab();
 }
 function washGlass(n) {
@@ -1484,7 +1611,7 @@ function submitOp() {
   if (!a || a <= 0) { toast('⚠️ Podaj kwotę'); return; }
   var fullDesc = (who ? who + ': ' : '') + d;
   S.cash.ops.push({id:uid(), type:OP_T, amt:a, desc:fullDesc, who:who, ts:Date.now()});
-  addLog(OP_T, null, 1, OP_T==='wpłata'?a:-a);
+  addLog(OP_T, null, 1, OP_T==='wpłata'?a:-a, {desc: fullDesc, who: who});
   toast((OP_T==='wpłata'?'⬆️':'⬇️') + ' ' + OP_T + ': ' + fmt(a) + (who ? ' (' + who + ')' : ''));
   document.getElementById('op-amt').value = '';
   if (document.getElementById('op-who')) document.getElementById('op-who').value = '';
@@ -3098,7 +3225,7 @@ function renderBaza() {
       h += '<div class="st-card" style="margin-bottom:6px">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
       h += '<div><div style="font-size:14px;font-weight:700;color:var(--text)">' + esc(w.name) + '</div>';
-      h += '<div style="font-size:11px;color:var(--muted)">' + w.type + ' · ' + w.ib + ' but. startowych</div></div>';
+      h += '<div style="font-size:11px;color:var(--muted)">' + w.type + ' · start: ' + w.ib + ' but. · zostało: ' + bottlesLeft(w) + ' but.</div></div>';
       h += '<div style="text-align:right">';
       h += '<div style="font-size:20px;font-weight:900;color:' + typeAccent[type] + '">' + w.pb + ' zł</div>';
       h += '<button onclick="changePrice(\'' + w.id + '\')" style="font-size:10px;background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:6px;padding:3px 8px;cursor:pointer;font-weight:700;margin-top:3px">✏️ Zmień cenę</button>';
@@ -4511,6 +4638,7 @@ function resetSales() {
   S.glasses = {issued:0, returned:0, washed:0, broken:0};
   S.log = []; S.cash.ops = [];
   save();
+  if (typeof sbSyncFull==='function') sbSyncFull();
   document.getElementById('set-m').remove();
   toast('↩️ Sprzedaż zresetowana');
   renderTab();
