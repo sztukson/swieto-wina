@@ -1350,6 +1350,7 @@ function confirmChangePrice(id) {
   w.priceHistory.push({date: localDate(), price: newP});
   w.pb = newP;
   save(); renderTab();
+  if(typeof sbPushWines==='function') sbPushWines();
   toast('✅ Cena ' + w.name + ': ' + newP + ' zł');
 }
 
