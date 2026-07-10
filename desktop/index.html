@@ -448,10 +448,10 @@ function sbPushOp(entry){
 
 function sbSyncFull(){
   if(!_sb || !SB_USER) return;
-  sbPushLive();
   var e = {id:uid(), ts:Date.now(), type:'sync-full'};
   SB_SEEN[e.id]=1;
   if(e.ts>SB_LASTOP) SB_LASTOP=e.ts;
+  sbPushLive();
   sbPushOp(e);
 }
 
@@ -475,14 +475,16 @@ function applyRemoteOp(e){
     return;
   }
   switch(e.type){
-    case 'degustacja': if(!w) break; w.ml=Math.max(0,w.ml-TASTING_ML); w.dg++; w.rev+=(e.amt||0); break;
-    case 'butelka': if(!w) break; w.ml=Math.max(0,w.ml-BOTTLE_ML); w.bt++; w.rev+=(e.amt||0); break;
+    case 'degustacja': if(!w) break; var qd=e.qty||1; w.ml=Math.max(0,w.ml-TASTING_ML*qd); w.dg+=qd; w.rev+=(e.amt||0); break;
+    case 'butelka': if(!w) break; var qb=e.qty||1; w.ml=Math.max(0,w.ml-BOTTLE_ML*qb); w.bt+=qb; w.rev+=(e.amt||0); break;
+    case 'wlasciciel': if(!w) break; w.ml=Math.max(0,w.ml-(e.qty||0)*BOTTLE_ML); break;
     case 'korekta':
       if(e.sub==='dg'){ if(!w) break; w.ml+=TASTING_ML; w.dg=Math.max(0,w.dg-1); w.rev+=(e.amt||0); }
       else if(e.sub==='bt'){ if(!w) break; w.ml+=BOTTLE_ML; w.bt=Math.max(0,w.bt-1); w.rev+=(e.amt||0); }
       else if(e.sub==='bag'){ if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold=Math.max(0,S.bags.sold-1); S.bags.rev+=(e.amt||0); }
       else if(e.sub==='wydanie'){ g.issued=Math.max(0,g.issued-1); }
       else if(e.sub==='zwrot'){ g.returned=Math.max(0,g.returned-1); }
+      else if(!e.sub && w && e.qty>0){ w.ml=Math.max(0,w.ml-e.qty*BOTTLE_ML); } // odpis butelek
       break;
     case 'butelka_zamknięta':
       if(!w) break;
@@ -524,9 +526,17 @@ function sbFetchOps(){
       });
       if(applied>0){
         try { localStorage.setItem('sw_v3', JSON.stringify(S)); } catch(err){}
-        renderTab();
+        SB_RENDER_PENDING = 1;
       }
+      if (SB_RENDER_PENDING && !sbUserBusy()) { SB_RENDER_PENDING = 0; renderTab(); }
     });
+}
+
+var SB_RENDER_PENDING = 0;
+function sbUserBusy(){
+  var ae = document.activeElement;
+  if (ae && (ae.tagName==='INPUT' || ae.tagName==='TEXTAREA' || ae.tagName==='SELECT')) return true;
+  return !!document.querySelector('[id$="-m"], .modal-ov');
 }
 
 function startOpsPolling(){
@@ -1439,6 +1449,7 @@ function confirmBottleInput() {
   });
   document.getElementById('bottleinput-m').remove();
   save();
+  if (typeof sbSyncFull==='function') sbSyncFull();
   toast('🌅 Nowy dzień zaczęty!', 3000);
   go('wina');
 }
@@ -2709,12 +2720,7 @@ function confirmBottleCorrection() {
   if (!w) { toast('Wybierz wino'); return; }
   var mlOdpis = qty * 750;
   w.ml = Math.max(0, w.ml - mlOdpis);
-  S.log.unshift({
-    id: uid(), ts: Date.now(),
-    type: 'korekta', wine: w.name,
-    qty: qty, amt: 0,
-    desc: reason
-  });
+  addLog('korekta', w.name, qty, 0, {desc: reason});
   document.getElementById('bc-m').remove();
   save(); renderTab();
   toast('🫙 Odpisano ' + qty + ' but. ' + w.name + ' (' + reason + ')');
@@ -2863,11 +2869,15 @@ function confirmManualTx() {
   w.rev += amt;
 
   // Dodaj do logu
-  S.log.unshift({
+  var _me = {
     id: 'i' + tms + Math.random().toString(36).slice(2,5),
     ts: tms, type: type, wine: w.name,
     qty: qty, amt: amt, pay: pay
-  });
+  };
+  S.log.unshift(_me);
+  SB_SEEN[_me.id]=1;
+  if(_me.ts>SB_LASTOP) SB_LASTOP=_me.ts;
+  if (typeof sbPushOp==='function') sbPushOp(_me);
 
   document.getElementById('mtx-m').remove();
   save();
@@ -3375,7 +3385,7 @@ function confirmOwnerBottles() {
   var w    = S.wines.find(function(x){ return x.id===wid; });
   if (!w) return;
   w.ml = Math.max(0, w.ml - qty * BOTTLE_ML);
-  S.log.unshift({id:uid(), ts:Date.now(), type:'wlasciciel', wine:w.name, qty:qty, amt:0, desc:note||'właściciel'});
+  addLog('wlasciciel', w.name, qty, 0, {desc:note||'właściciel'});
   document.getElementById('own-m').remove();
   save(); renderTab();
   toast('📦 ' + qty + ' but. ' + w.name + ' — właściciel');
