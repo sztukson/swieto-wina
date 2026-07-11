@@ -2874,16 +2874,18 @@ function openBottleCorrection() {
   h += '<div><div class="fl">Ilość butelek do odpisania</div>';
   h += '<div style="display:flex;gap:8px;align-items:center">';
   h += '<button onclick="bcQty(-1)" style="background:var(--s3);border:1px solid var(--border);color:var(--text);border-radius:8px;width:44px;height:44px;font-size:20px;cursor:pointer">−</button>';
-  h += '<input class="fi" id="bc-qty" type="number" min="1" max="50" value="1" style="margin:0;text-align:center;font-size:18px;font-weight:700">';
+  h += '<input class="fi" id="bc-qty" type="number" min="1" max="50" value="1" oninput="bcPreview()" style="margin:0;text-align:center;font-size:18px;font-weight:700">';
   h += '<button onclick="bcQty(1)" style="background:var(--s3);border:1px solid var(--border);color:var(--text);border-radius:8px;width:44px;height:44px;font-size:20px;cursor:pointer">+</button>';
-  h += '</div></div>';
+  h += '</div>';
+  h += '<div id="bc-preview" style="text-align:center;margin-top:8px;font-size:15px;font-weight:800;color:var(--red)">−1 butelka z magazynu</div>';
+  h += '</div>';
   h += '<div><div class="fl">Powód</div>';
   h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-  ['rozlane w winnicy','ubytek','próbka','inne'].forEach(function(r, i){
+  ['pomyłka','rozlane w winnicy','ubytek','próbka','inne'].forEach(function(r, i){
     h += '<button data-bcreason="' + r + '" onclick="bcSetReason(\'' + r + '\')" style="padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ' + (i===0?'var(--wine)':'var(--border)') + ';background:' + (i===0?'rgba(139,26,46,.2)':'transparent') + ';color:' + (i===0?'var(--wine)':'var(--muted)') + '">' + r + '</button>';
   });
   h += '</div></div>';
-  h += '<input type="hidden" id="bc-reason" value="rozlane w winnicy">';
+  h += '<input type="hidden" id="bc-reason" value="pomyłka">';
   h += '<button onclick="confirmBottleCorrection()" style="background:var(--orange);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer">🫙 Odpisz butelki</button>';
   h += '<button onclick="document.getElementById(\'bc-m\').remove()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;cursor:pointer">Anuluj</button>';
   h += '</div></div></div>';
@@ -2892,6 +2894,14 @@ function openBottleCorrection() {
 function bcQty(d) {
   var el = document.getElementById('bc-qty');
   el.value = Math.max(1, (parseInt(el.value)||1) + d);
+  bcPreview();
+}
+function bcPreview() {
+  var el = document.getElementById('bc-qty');
+  var p = document.getElementById('bc-preview');
+  if (!el || !p) return;
+  var n = Math.max(1, parseInt(el.value)||1);
+  p.textContent = '−' + n + (n===1?' butelka':n<=4?' butelki':' butelek') + ' z magazynu';
 }
 function bcSetReason(r) {
   document.getElementById('bc-reason').value = r;
