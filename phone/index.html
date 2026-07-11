@@ -351,6 +351,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 var TASTING_ML    = 50;
 var BOTTLE_ML     = 750;
 var TASTING_PRICE = 5;
+var GLASS_WINE_ML = 100;   // kieliszek wina = podwójna degustacja
+var GLASS_WINE_PRICE = 10;
 var DEPOSIT_AMT   = 10;
 var INITIAL_CASH  = 598.32;
 var TOTAL_GLASSES = parseInt(localStorage.getItem('sw_total_glasses')) || 45;
@@ -602,9 +604,11 @@ function sbApplyEffect(e){
   switch(e.type){
     case 'degustacja': if(!w) break; var qd=e.qty||1; w.ml=Math.max(0,w.ml-TASTING_ML*qd); w.dg+=qd; w.rev+=(e.amt||0); break;
     case 'butelka': if(!w) break; var qb=e.qty||1; w.ml=Math.max(0,w.ml-BOTTLE_ML*qb); w.bt+=qb; w.rev+=(e.amt||0); break;
+    case 'kieliszek': if(!w) break; var qk=e.qty||1; w.ml=Math.max(0,w.ml-GLASS_WINE_ML*qk); w.dg+=2*qk; w.rev+=(e.amt||0); break;
     case 'wlasciciel': if(!w) break; w.ml=Math.max(0,w.ml-(e.qty||0)*BOTTLE_ML); break;
     case 'korekta':
       if(e.sub==='dg'){ if(!w) break; w.ml+=TASTING_ML; w.dg=Math.max(0,w.dg-1); w.rev+=(e.amt||0); }
+      else if(e.sub==='kw'){ if(!w) break; w.ml+=GLASS_WINE_ML; w.dg=Math.max(0,w.dg-2); w.rev+=(e.amt||0); }
       else if(e.sub==='bt'){ if(!w) break; w.ml+=BOTTLE_ML; w.bt=Math.max(0,w.bt-1); w.rev+=(e.amt||0); }
       else if(e.sub==='bag'){ if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold=Math.max(0,S.bags.sold-1); S.bags.rev+=(e.amt||0); }
       else if(e.sub==='wydanie'){ g.issued=Math.max(0,g.issued-1); }
@@ -639,9 +643,11 @@ function sbRevertEffect(e){
   switch(e.type){
     case 'degustacja': if(!w) break; var qd=e.qty||1; w.ml+=TASTING_ML*qd; w.dg=Math.max(0,w.dg-qd); w.rev-=(e.amt||0); break;
     case 'butelka': if(!w) break; var qb=e.qty||1; w.ml+=BOTTLE_ML*qb; w.bt=Math.max(0,w.bt-qb); w.rev-=(e.amt||0); break;
+    case 'kieliszek': if(!w) break; var qk=e.qty||1; w.ml+=GLASS_WINE_ML*qk; w.dg=Math.max(0,w.dg-2*qk); w.rev-=(e.amt||0); break;
     case 'wlasciciel': if(!w) break; w.ml+=(e.qty||0)*BOTTLE_ML; break;
     case 'korekta':
       if(e.sub==='dg'){ if(!w) break; w.ml=Math.max(0,w.ml-TASTING_ML); w.dg++; w.rev-=(e.amt||0); }
+      else if(e.sub==='kw'){ if(!w) break; w.ml=Math.max(0,w.ml-GLASS_WINE_ML); w.dg+=2; w.rev-=(e.amt||0); }
       else if(e.sub==='bt'){ if(!w) break; w.ml=Math.max(0,w.ml-BOTTLE_ML); w.bt++; w.rev-=(e.amt||0); }
       else if(e.sub==='bag'){ if(!S.bags) S.bags={sold:0,rev:0}; S.bags.sold++; S.bags.rev-=(e.amt||0); }
       else if(e.sub==='wydanie'){ g.issued++; }
@@ -1100,7 +1106,7 @@ function stockColor(bl) {
 // LOG
 // ─────────────────────────────────────────────
 var OP_ICONS = {
-  'degustacja':'🥂','butelka':'🍾','korekta':'↩️','dostawa':'📦','torba':'🛍️',
+  'degustacja':'🥂','butelka':'🍾','kieliszek':'🍷','korekta':'↩️','dostawa':'📦','torba':'🛍️',
   'butelka_zamknięta':'🫙','wydanie':'🥂','zwrot':'✅','umycie':'🫧',
   'kaucja+':'💰','kaucja-':'💸','wpłata':'⬆️','wypłata':'⬇️'
 };
@@ -1186,6 +1192,44 @@ function undoBt(id) {
   w.rev -= undoAmtBt;
   addLog('korekta', w.name, -1, -undoAmtBt, {sub:'bt'});
   toast('↩️ Cofnięto butelkę');
+  save(); renderTab();
+}
+
+function sellKw(id) {
+  var w = S.wines.find(function(x){ return x.id===id; });
+  if (!w) return;
+  if (w.ml < GLASS_WINE_ML) { toast('⚠️ Za mało wina w butelce!'); return; }
+  w.ml -= GLASS_WINE_ML;
+  w.dg += 2; // kieliszek = 2 degustacje
+  var price = applyDiscount(GLASS_WINE_PRICE);
+  w.rev += price;
+  var extra = {pay: PAY_TYPE};
+  if (DISCOUNT.active && price !== GLASS_WINE_PRICE) extra.discount = GLASS_WINE_PRICE - price;
+  addLog('kieliszek', w.name, 1, price, extra);
+  var dgFromCurrentK = w.dg - w.dgAtLastClose;
+  if (dgFromCurrentK >= TASTINGS_PER_BOTTLE) {
+    closeBottle(id);
+    toast('🍾 Butelka ' + (w.closedBottles.length) + ' automatycznie zamknięta — zaczyna się nowa!', 4000);
+    return;
+  }
+  var discStrK = DISCOUNT.active && price !== GLASS_WINE_PRICE ? ' (rabat −' + fmtN(GLASS_WINE_PRICE-price) + ' zł)' : '';
+  toast('🍷 Kieliszek +' + fmt(price) + discStrK);
+  save(); renderTab();
+}
+function undoKw(id) {
+  var w = S.wines.find(function(x){ return x.id===id; });
+  if (!w) return;
+  var lastKw = null;
+  for (var i=0; i<S.log.length; i++) {
+    if (S.log[i].type==='kieliszek' && S.log[i].wine===w.name) { lastKw=S.log[i]; break; }
+  }
+  if (!lastKw) { toast('Brak kieliszków do cofnięcia'); return; }
+  var undoAmtKw = lastKw.amt;
+  w.ml += GLASS_WINE_ML;
+  w.dg = Math.max(0, w.dg - 2);
+  w.rev -= undoAmtKw;
+  addLog('korekta', w.name, -1, -undoAmtKw, {sub:'kw'});
+  toast('↩️ Cofnięto kieliszek');
   save(); renderTab();
 }
 
@@ -1388,7 +1432,7 @@ function ordChange(id, type, delta) {
     } else {
       var w2 = S.wines.find(function(x){ return x.id===id; });
       if (!w2) return;
-      var price2 = type === 'dg' ? TASTING_PRICE : w2.pb;
+      var price2 = type === 'dg' ? TASTING_PRICE : type === 'kw' ? GLASS_WINE_PRICE : w2.pb;
       ZAMOWIENIE.items.push({id: id, name: w2.name, type: type, qty: 1, price: price2});
     }
   } else {
@@ -1475,6 +1519,23 @@ function confirmOrder() {
           w3.closedBottles.push({ts:Date.now(), tastings:t3, avgMl: t3>0?Math.round((BOTTLE_ML/t3)*10)/10:0, mlCorrection:cor3>0?cor3:0});
           w3.dgAtLastClose = w3.dg;
           addLog('butelka_zamknięta', w3.name, t3, 0);
+        }
+      } else if (item.type === 'kw') {
+        if (w3.ml < GLASS_WINE_ML) break;
+        w3.ml -= GLASS_WINE_ML;
+        w3.dg += 2;
+        var kp3 = applyDiscount(GLASS_WINE_PRICE);
+        w3.rev += kp3; totalAmtO += kp3; totalProc++;
+        addLog('kieliszek', w3.name, 1, kp3, {pay: ordPay});
+        var dgCurK = w3.dg - w3.dgAtLastClose;
+        if (dgCurK >= TASTINGS_PER_BOTTLE) {
+          var tK = w3.dg - w3.dgAtLastClose;
+          var trK = tK * TASTING_ML;
+          var corK = BOTTLE_ML - trK;
+          if (corK !== 0) w3.ml = Math.max(0, w3.ml - corK);
+          w3.closedBottles.push({ts:Date.now(), tastings:tK, avgMl: tK>0?Math.round((BOTTLE_ML/tK)*10)/10:0, mlCorrection:corK>0?corK:0});
+          w3.dgAtLastClose = w3.dg;
+          addLog('butelka_zamknięta', w3.name, tK, 0);
         }
       } else if (item.type === 'bt') {
         if (w3.ml < BOTTLE_ML) break;
@@ -2290,6 +2351,15 @@ function buildWineCard(w) {
     h += '</div>';
     h += '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">' + tl + ' porcji</div>';
     h += '</div>';
+    var ordKwQ = 0; ZAMOWIENIE.items.forEach(function(it){ if(it.id===w.id && it.type==='kw') ordKwQ += it.qty; });
+    h += '<div class="wc-ag">';
+    h += '<div class="ag-label" style="color:var(--gold)">🛒 Kieliszek ' + GLASS_WINE_PRICE + ' zł' + discBadge + '</div>';
+    h += '<div class="ag-row">';
+    h += '<button class="btn-big btn-minus" onclick="ordChange(\'' + w.id + '\',\'kw\',-1)" ' + (ordKwQ===0?'disabled':'') + '>−</button>';
+    h += '<button class="btn-big btn-plus" onclick="ordChange(\'' + w.id + '\',\'kw\',1)" ' + (w.ml<GLASS_WINE_ML?'disabled':'') + ' style="' + (ordKwQ>0?'background:rgba(200,168,75,.3);color:var(--gold)':'') + '">' + (ordKwQ>0?'🛒 ×'+ordKwQ:'+ Kieliszek') + '</button>';
+    h += '</div>';
+    h += '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">100 ml · 2× degustacja</div>';
+    h += '</div>';
     h += '<div class="wc-ag">';
     h += '<div class="ag-label" style="color:var(--gold)">🛒 Butelka ' + w.pb + ' zł' + discBadge + '</div>';
     h += '<div class="ag-row">';
@@ -2308,6 +2378,14 @@ function buildWineCard(w) {
     h += '<button onclick="sellDgBulk(\'' + w.id + '\')" style="background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:0 10px;font-size:18px;height:52px;cursor:pointer" title="Wiele na raz">×N</button>';
     h += '</div>';
     h += '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">' + tl + ' porcji pozostało</div>';
+    h += '</div>';
+    h += '<div class="wc-ag">';
+    h += '<div class="ag-label">🍷 Kieliszek ' + GLASS_WINE_PRICE + ' zł' + discBadge + '</div>';
+    h += '<div class="ag-row">';
+    h += '<button class="btn-big btn-minus" onclick="undoKw(\'' + w.id + '\')">−</button>';
+    h += '<button class="btn-big btn-plus" onclick="sellKw(\'' + w.id + '\')" ' + (w.ml < GLASS_WINE_ML?'disabled':'') + '>+ Kieliszek</button>';
+    h += '</div>';
+    h += '<div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">100 ml · liczony jak 2 degustacje</div>';
     h += '</div>';
     h += '<div class="wc-ag">';
     h += '<div class="ag-label">🍾 Butelka ' + w.pb + ' zł' + discBadge + '</div>';
@@ -4713,7 +4791,7 @@ function fmtFullTime(ts) {
 }
 
 var OP_LABELS = {
-  'degustacja':'Degustacja','butelka':'Sprzedaż butelki','korekta':'Korekta',
+  'degustacja':'Degustacja','butelka':'Sprzedaż butelki','kieliszek':'Kieliszek wina 100 ml','korekta':'Korekta',
   'butelka_zamknięta':'Butelka skończona','dostawa':'Dostawa',
   'wydanie':'Wydanie kieliszka','zwrot':'Zwrot kieliszka','umycie':'Mycie kieliszków',
   'kaucja+':'Kaucja pobrana','kaucja-':'Kaucja zwrócona',
