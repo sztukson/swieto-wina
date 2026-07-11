@@ -2204,14 +2204,15 @@ function renderPick(){
   if(!PICK.kind){
     h+='<div class="pick-sub">'+(bl>0?'zostało '+bl+' but.':'⛔ brak butelek')+' · wybierz rodzaj</div>';
     h+='<button class="pick-btn pick-dg" onclick="pickType(\'dg\')">🥂 Degustacja — '+fmtN(dgP)+' zł</button>';
+    h+='<button class="pick-btn pick-dg" style="background:#7a3a5a" onclick="pickType(\'kw\')">🍷 Kieliszek 100ml — '+fmtN(GLASS_WINE_PRICE)+' zł</button>';
     h+='<button class="pick-btn pick-bt" onclick="pickType(\'bt\')">🍾 Butelka — '+fmtN(btP)+' zł</button>';
     h+='<button class="pick-anuluj" onclick="closePick()">Anuluj</button>';
     document.getElementById('pick-c').innerHTML=h;
     return;
   }
-  var base=PICK.kind==='dg'?dgP:btP;
+  var base=PICK.kind==='dg'?dgP:PICK.kind==='kw'?GLASS_WINE_PRICE:btP;
   var da=kfDiscAmount(base), fin=Math.max(0,base-da);
-  h+='<div class="pick-sub">'+(PICK.kind==='dg'?'🥂 Degustacja':'🍾 Butelka')+' · cena '+fmtN(base)+' zł</div>';
+  h+='<div class="pick-sub">'+(PICK.kind==='dg'?'🥂 Degustacja':PICK.kind==='kw'?'🍷 Kieliszek 100ml':'🍾 Butelka')+' · cena '+fmtN(base)+' zł</div>';
   h+='<div class="pick-lbl">1. Płatność</div><div class="pick-seg">';
   [['gotówka','💵','#2e7d4f'],['karta','💳','#2f6fb0'],['blik','📱','#7a3fb0']].forEach(function(p){
     var on=PICK.pay===p[0];
@@ -2239,7 +2240,7 @@ function confirmPick(){
   if(kind==='bt' && dt && dv>0){ DISCOUNT={active:true, type:dt, value:dv}; }
   else { DISCOUNT={active:false, type:'%', value:0}; }
   closePick();
-  if(kind==='dg') sellDg(id); else sellBt(id);
+  if(kind==='dg') sellDg(id); else if(kind==='kw') sellKw(id); else sellBt(id);
   DISCOUNT={active:false, type:'%', value:0};
 }
 
