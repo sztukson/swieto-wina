@@ -781,7 +781,7 @@ function sbSetErr(msg) {
 // STATE
 // ─────────────────────────────────────────────
 var S, TAB = 'home', LOG_F = 'all', OP_T = 'wpłata', TOAST_T = null;
-var HOURLY_SHOW = {dg:true, bt:true, bag:true};
+var HOURLY_SHOW = {dg:true, kw:true, bt:true, bag:true};
 var MAG_OPEN = false;
 var MAG_SHOW = {open:true, closed:true, sealed:true};
 var CARTON_SIZE = 6; // ile butelek w kartonie (konfigurowalne)
@@ -1959,7 +1959,9 @@ function renderHome() {
 
   // Dashboard
   html += '<div class="db-grid">';
-  html += '<div class="db-card"><div class="db-label">Degustacje</div><div class="db-val">' + dg + '</div><div class="db-sub">sprzedanych</div></div>';
+  var kwCount = S.log.reduce(function(sm,l){ return l.type==='kieliszek' ? sm+1 : (l.type==='korekta'&&l.sub==='kw' ? sm-1 : sm); }, 0);
+  html += '<div class="db-card"><div class="db-label">Degustacje</div><div class="db-val">' + dg + '</div><div class="db-sub">porcji (kieliszek = 2)</div></div>';
+  html += '<div class="db-card"><div class="db-label">🍷 Kieliszki 100ml</div><div class="db-val">' + kwCount + '</div><div class="db-sub">sprzedanych</div></div>';
   html += '<div class="db-card"><div class="db-label">Butelki</div><div class="db-val">' + bt + '</div><div class="db-sub">sprzedanych</div></div>';
   html += '<div class="db-card" style="cursor:pointer" onclick="toggleRev()" id="rev-db-card"><div class="db-label">💰 Przychód <span style="font-size:11px;opacity:.5">👁</span></div><div id="rev-db-val" style="filter:blur(8px);color:var(--gold);font-size:22px;transition:filter .3s;user-select:none">' + fmtN(rev) + ' zł</div><div id="rev-db-sub" style="filter:blur(6px);font-size:11px;color:var(--muted);transition:filter .3s">ze sprzedaży</div></div>';
   html += '<div class="db-card"><div class="db-label">🛍️ Torby</div><div class="db-val">' + bags.sold + '</div><div class="db-sub">' + fmtN(bags.rev) + ' zł</div></div>';
@@ -2609,13 +2611,17 @@ function renderStats() {
   // Sprzedaż godzinowa + punktacja
   var hourly = {};
   S.log.forEach(function(l){
-    if (l.type !== 'degustacja' && l.type !== 'butelka' && l.type !== 'torba' && l.type !== 'korekta') return;
+    if (l.type !== 'degustacja' && l.type !== 'kieliszek' && l.type !== 'butelka' && l.type !== 'torba' && l.type !== 'korekta') return;
     var hr = new Date(l.ts).getHours();
-    if (!hourly[hr]) hourly[hr] = {dg:0, bt:0, bags:0, revDg:0, revBt:0, revBag:0, ptsDg:0, ptsBt:0, ptsBag:0};
+    if (!hourly[hr]) hourly[hr] = {dg:0, kw:0, bt:0, bags:0, revDg:0, revKw:0, revBt:0, revBag:0, ptsDg:0, ptsKw:0, ptsBt:0, ptsBag:0};
     if (l.type === 'degustacja') {
       hourly[hr].dg++;
       hourly[hr].ptsDg += 1;
       hourly[hr].revDg += l.amt || 0;
+    } else if (l.type === 'kieliszek') {
+      hourly[hr].kw++;
+      hourly[hr].ptsKw += 2;
+      hourly[hr].revKw += l.amt || 0;
     } else if (l.type === 'butelka') {
       hourly[hr].bt++;
       var logWine = S.wines.find(function(w){ return w.name===l.wine; });
@@ -2627,6 +2633,7 @@ function renderStats() {
       hourly[hr].revBag += l.amt || 0;
     } else if (l.type === 'korekta') {
       if (l.sub === 'dg') { hourly[hr].dg--; hourly[hr].ptsDg -= 1; hourly[hr].revDg += l.amt || 0; }
+      else if (l.sub === 'kw') { hourly[hr].kw--; hourly[hr].ptsKw -= 2; hourly[hr].revKw += l.amt || 0; }
       else if (l.sub === 'bt') {
         hourly[hr].bt--;
         var logWine2 = S.wines.find(function(w){ return w.name===l.wine; });
@@ -2639,13 +2646,14 @@ function renderStats() {
   if (hours.length > 0) {
     var maxDgAll  = Math.max.apply(null, hours.map(function(hr){ return hourly[hr].dg; }))   || 1;
     var maxBtAll  = Math.max.apply(null, hours.map(function(hr){ return hourly[hr].bt; }))   || 1;
+    var maxKwAll  = Math.max.apply(null, hours.map(function(hr){ return hourly[hr].kw; }))   || 1;
     var maxBagAll = Math.max.apply(null, hours.map(function(hr){ return hourly[hr].bags; })) || 1;
     // Punkty i zł tylko z aktywnych filtrów
     function dispPtsHr(hr) {
-      return (HOURLY_SHOW.dg?hourly[hr].ptsDg:0) + (HOURLY_SHOW.bt?hourly[hr].ptsBt:0) + (HOURLY_SHOW.bag?hourly[hr].ptsBag:0);
+      return (HOURLY_SHOW.dg?hourly[hr].ptsDg:0) + (HOURLY_SHOW.kw?hourly[hr].ptsKw:0) + (HOURLY_SHOW.bt?hourly[hr].ptsBt:0) + (HOURLY_SHOW.bag?hourly[hr].ptsBag:0);
     }
     function dispRevHr(hr) {
-      return (HOURLY_SHOW.dg?hourly[hr].revDg:0) + (HOURLY_SHOW.bt?hourly[hr].revBt:0) + (HOURLY_SHOW.bag?hourly[hr].revBag:0);
+      return (HOURLY_SHOW.dg?hourly[hr].revDg:0) + (HOURLY_SHOW.kw?hourly[hr].revKw:0) + (HOURLY_SHOW.bt?hourly[hr].revBt:0) + (HOURLY_SHOW.bag?hourly[hr].revBag:0);
     }
     var maxPts   = Math.max.apply(null, hours.map(function(hr){ return dispPtsHr(hr); })) || 1;
     var totalPts = hours.reduce(function(s,hr){ return s + dispPtsHr(hr); }, 0);
@@ -2655,7 +2663,7 @@ function renderStats() {
 
     // Filtry — checkboxy
     h += '<div style="display:flex;gap:14px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px">';
-    var hFilters = [{k:'dg',l:'🥂 Degustu',col:'#5b9bd5'},{k:'bt',l:'🍾 Butelki',col:'var(--wine)'},{k:'bag',l:'🛍️ Torby',col:'var(--gold)'}];
+    var hFilters = [{k:'dg',l:'🥂 Degustu',col:'#5b9bd5'},{k:'kw',l:'🍷 Kieliszki',col:'#b06ab0'},{k:'bt',l:'🍾 Butelki',col:'var(--wine)'},{k:'bag',l:'🛍️ Torby',col:'var(--gold)'}];
     hFilters.forEach(function(f){
       var on = HOURLY_SHOW[f.k];
       h += '<label onclick="HOURLY_SHOW.' + f.k + '=!' + on + ';renderTab()" style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none">';
@@ -2675,6 +2683,10 @@ function renderStats() {
       if (HOURLY_SHOW.dg) {
         var pDg = (hourly[hr].dg / maxDgAll * 100).toFixed(0);
         h += '<div style="display:flex;gap:2px;align-items:center;font-size:10px;color:var(--muted)"><span style="min-width:22px">🥂' + hourly[hr].dg + '</span><div style="flex:1;height:6px;background:var(--s3);border-radius:3px"><div style="width:' + pDg + '%;height:100%;background:#5b9bd5;border-radius:3px"></div></div></div>';
+      }
+      if (HOURLY_SHOW.kw) {
+        var pKw = (hourly[hr].kw / maxKwAll * 100).toFixed(0);
+        h += '<div style="display:flex;gap:2px;align-items:center;font-size:10px;color:var(--muted)"><span style="min-width:22px">🍷' + hourly[hr].kw + '</span><div style="flex:1;height:6px;background:var(--s3);border-radius:3px"><div style="width:' + pKw + '%;height:100%;background:#b06ab0;border-radius:3px"></div></div></div>';
       }
       if (HOURLY_SHOW.bt) {
         var pBt = (hourly[hr].bt / maxBtAll * 100).toFixed(0);
