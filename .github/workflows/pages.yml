@@ -1,0 +1,45 @@
+# Publikacja strony na GitHub Pages przez Actions.
+#
+# Zastępuje starą (legacy) ścieżkę branch-based, która 6.08.2026 zacięła się
+# na dobre: każdy deploy przechodził waiting → queued → in_progress i po ~10
+# minutach padał na "Timeout reached, aborting". Zaczęło się od buildu
+# anulowanego przez nowszy push i nie dało się tego odblokować ani przez
+# przełączanie konfiguracji, ani przez pojedynczy push przy pustej kolejce.
+name: Deploy Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Jeden deploy naraz, ale NIGDY nie ubijamy trwającego — anulowanie w trakcie
+# jest dokładnie tym, co zawiesiło starą ścieżkę.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Spakuj stronę
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
