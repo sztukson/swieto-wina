@@ -155,7 +155,8 @@ parts = [
     '<meta name=viewport content="width=device-width,initial-scale=1">',
     "<title>Historia wersji — Święto Wina 🍷</title>",
     f"<style>{CSS}</style></head><body><div class=wrap>",
-    '<a class=powrot href="./">← wróć do aplikacji</a>',
+    '<a class=powrot href="./" onclick="if(history.length>1){history.back();return false}">'
+    '← wróć</a>',
     "<h1>🍷 Historia Święta Wina</h1>",
     f'<div class=sub>Jak ta aplikacja powstawała — wersja po wersji, od pierwszego dnia do dziś. '
     f'Aktualnie: <strong>{html.escape(biezaca)}</strong></div>',
