@@ -99,7 +99,7 @@ dziennika operacji, więc nie wolno jej używać do liczenia równolegle z telef
 od 6.08.2026 w folderze `INSTALACJA/` leży świeży .dmg zbudowany z aktualnego kodu.
 
 
-## Wersja Mac (Electron .dmg) — równolegle
+### Wersja Mac (Electron .dmg) — równolegle
 - Pełna apka z liczeniem banknotów (Kasa), dla głównych stanowisk
 - Dostała dodawanie/usuwanie win (build 20)
 - Ta sama baza Supabase co PWA
