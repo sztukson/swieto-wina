@@ -78,6 +78,27 @@ usunietej z `allowed_users` zostana odrzucone przy synchronizacji.
 - PWA: offline (service worker), instalacja na ekranie głównym, tryb dzień/noc, auto-reload przy aktualizacji
 - Hosting: GitHub Pages — https://sztukson.github.io/swieto-wina/
 
+
+## Wersja 0 (przed repozytorium) — maj 2026 — apka na Maca (Electron)
+
+Punkt startowy: aplikacja **zainstalowana lokalnie na Macu** (Electron, plik .dmg),
+budowana „na kolanie" przed pierwszym festiwalem. Miała pelne liczenie kasy
+z banknotami i dzialala bez internetu, ale byla tylko na jednym komputerze —
+zero synchronizacji miedzy stanowiskami.
+
+- **Chrzest bojowy: Festiwal Wina Janowiec, 30-31.05.2026** — dwa dni policzone
+  w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni sa dzis w archiwum
+  w chmurze).
+- Instalka rozeslana Mary, ktora liczyla na laptopie.
+- Wnioski, ktore wymusily przejscie na PWA: brak synchronizacji miedzy
+  urzadzeniami, kazda poprawka wymagala przebudowy i rozeslania .dmg, a na cudzym
+  Macu system straszyl „nieznany deweloper".
+
+Ta wersja zyje dalej jako archiwum w `electron-app/` — nie uzywac jej do liczenia
+razem z telefonami, bo nie zna dziennika operacji (`ops`) i moze nadpisac prace innych.
+
+---
+
 ## Wersja Mac (Electron .dmg) — równolegle
 - Pełna apka z liczeniem banknotów (Kasa), dla głównych stanowisk
 - Dostała dodawanie/usuwanie win (build 20)

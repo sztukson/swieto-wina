@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang=pl><head><meta charset=UTF-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Historia wersji — Święto Wina 🍷</title>
+<style>
+:root{--bg:#0d0b10;--s1:#17131c;--s2:#1f1a26;--s3:#282130;--border:#332b3d;
+--text:#ece7f2;--muted:#9b8fa8;--gold:#c8a84b;--gold2:#8a7433;--wine:#8b2030;--wine2:#c4485c;--green:#4ea36b;
+--r:16px;--rsm:10px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 70px}
+h1{font-family:Georgia,serif;font-size:30px;margin:0 0 6px;color:var(--gold);font-weight:400}
+.sub{color:var(--muted);font-size:14px;margin-bottom:26px}
+.pill{display:inline-block;background:var(--s3);border:1px solid var(--gold2);color:var(--gold);
+border-radius:999px;padding:4px 13px;font-size:12px;font-weight:700;margin-right:7px}
+.karta{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+padding:20px 22px;margin:0 0 16px;position:relative}
+.karta.teraz{border-color:var(--gold2);box-shadow:0 0 0 1px rgba(200,168,75,.18)}
+.karta h3{font-family:Georgia,serif;font-size:19px;margin:0 0 4px;color:var(--gold);font-weight:400}
+.data{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.karta h4{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+margin:16px 0 7px;font-weight:700}
+.karta p{margin:8px 0;font-size:14px}
+ul{margin:8px 0;padding-left:20px}
+li{font-size:14px;margin:5px 0}
+li.cont{list-style:none;margin-left:-6px;color:var(--muted);font-size:13px}
+code{background:var(--s3);border-radius:5px;padding:1px 6px;font-size:12.5px;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--gold)}
+strong{color:#fff}
+h2.sekcja{font-family:Georgia,serif;font-size:22px;color:var(--gold);font-weight:400;
+margin:40px 0 8px;border-top:1px solid var(--border);padding-top:26px}
+details{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);
+padding:11px 15px;margin:8px 0}
+summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--text);outline:none}
+summary::marker{color:var(--gold)}
+details .lc{color:var(--muted);font-weight:400;font-size:12.5px}
+.commit{font-size:13px;color:var(--muted);margin:6px 0 6px 4px;display:flex;gap:9px}
+.commit .h{font-family:ui-monospace,Menlo,monospace;color:var(--gold2);flex:0 0 58px}
+.stat{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 8px}
+.stat div{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);
+padding:12px 16px;min-width:120px;flex:1}
+.stat b{display:block;font-size:22px;color:var(--gold);font-family:Georgia,serif;font-weight:400}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+a{color:var(--gold)}
+.powrot{display:inline-block;margin-bottom:20px;font-size:13px;color:var(--muted);text-decoration:none}
+.powrot:hover{color:var(--gold)}
+.stopka{margin-top:36px;padding-top:18px;border-top:1px solid var(--border);
+color:var(--muted);font-size:12px}
+@media(max-width:520px){h1{font-size:24px}.wrap{padding:20px 14px 60px}}
+</style></head><body><div class=wrap>
+<a class=powrot href="./">← wróć do aplikacji</a>
+<h1>🍷 Historia Święta Wina</h1>
+<div class=sub>Jak ta aplikacja powstawała — wersja po wersji, od pierwszego dnia do dziś. Aktualnie: <strong>v1.2 (build 22)</strong></div>
+<div class=stat>
+<div><b>46</b><span>zmian w kodzie</span></div>
+<div><b>6</b><span>dni pracy</span></div>
+<div><b>5</b><span>opisanych wersji</span></div>
+<div><b>2026-06-06</b><span>pierwszy commit</span></div>
+</div>
+<h2 class=sekcja>Wersje</h2>
+<div class="karta teraz">
+<h3>v1.2 (build 22) — offline na komputerze + wiadomo kto liczyl</h3>
+<div class=data>2026-08-06 <span class=pill>tag v1.2</span><span class=pill>aktualna</span></div>
+<p><strong>Wersja komputerowa dziala teraz offline i da sie ja zainstalowac.</strong> Wczesniej</p>
+<p><code>/desktop/</code> byla jedyna wersja bez service workera i manifestu — czyli bez</p>
+<p>internetu nie otwierala sie w ogole. Teraz w Chrome mozna kliknac „Zainstaluj&quot;</p>
+<p>i dostac osobne okno w Docku, dzialajace bez sieci. Bez .dmg, bez Gatekeepera.</p>
+<h4>Offline z zachowaniem tozsamosci (najwazniejsze)</h4>
+<p>Wczesniej brak internetu wygladal jak brak uprawnien: <code>sbCheckAccess</code> odpytywal</p>
+<p><code>allowed_users</code>, zapytanie padalo i user (poza adminem, ktory ma fallback)</p>
+<p>dostawal ekran „⛔ Brak dostepu&quot;. A jesli wszedl przyciskiem „Tryb offline&quot;,</p>
+<p>to operacje szly do kolejki <strong>bez podpisu</strong> (<code>entry.by = null</code>) i nigdy sie nie</p>
+<p>wysylaly. Zmiany:</p>
+<ul>
+<li>po kazdym udanym sprawdzeniu dostepu zapisujemy decyzje lokalnie (<code>sw_access</code>),</li>
+<li class=cont>a gdy siec nie odpowiada — wpuszczamy na jej podstawie (pasek 📴 OFFLINE)</li>
+<li>„Tryb offline&quot; <strong>pyta, kto liczy</strong>, i tym podpisuje kazda operacje; podpis</li>
+<li class=cont>jest pamietany, wiec przy kolejnym otwarciu bez sieci apka nie pyta ponownie</li>
+<li>kolejka (<code>sw_outbox</code>) ma komu przypisac operacje, wiec po powrocie sieci /</li>
+<li class=cont>zalogowaniu sama je dosyła — sprawdzone end-to-end na prawdziwej bazie</li>
+<li>w logu zostaje: <strong>kto</strong> (<code>by</code>), <strong>dokladna godzina kliknięcia</strong> (<code>ts</code>) i</li>
+<li class=cont>znacznik <strong>📴 offline</strong>; osobno w bazie widac godzine wyslania (<code>created_at</code>)</li>
+<li>brak sieci nie pokazuje sie juz jako „⚠️ BLAD SYNC&quot; (nowe <code>srvProblem()</code>)</li>
+</ul>
+<p>Bezpieczenstwo bez zmian: prawdziwa brama to RLS w bazie, wiec operacje osoby</p>
+<p>usunietej z <code>allowed_users</code> zostana odrzucone przy synchronizacji.</p>
+</div>
+<div class="karta">
+<h3>v1.1 (build 21) — wersja stabilna po naprawie synchronizacji i bezpieczenstwa</h3>
+<div class=data>2026-08-06 <span class=pill>tag v1.1</span></div>
+<p><strong>To jest oznaczona wersja dzialajaca (tag <code>v1.1</code>).</strong> Sprawdzone: 5 dni w archiwum,</p>
+<p>1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor 0 bledow.</p>
+<h4>Naprawione</h4>
+<ul>
+<li><strong>Stare dane wracaly mimo zapisanych dni.</strong> <code>sbPushLive</code> stemplowal snapshot</li>
+<li class=cont>znacznikiem <code>_opTs = SB_LASTOP</code> (czas ostatniej operacji). Gdy nikt nic nie</li>
+<li class=cont>klika, ta wartosc stoi w miejscu, wiec kolejne snapshoty mialy identyczny</li>
+<li class=cont>znacznik, a warunek przyjecia byl <code>&gt;=</code> — kazde logowanie i kazdy <code>sync-full</code></li>
+<li class=cont>przyjmowaly stary stan. Teraz znacznik to rosnacy zegar, a snapshot jest</li>
+<li class=cont>przyjmowany tylko gdy faktycznie nowszy (<code>&gt;</code>).</li>
+<li><strong>Odswiezanie po kliknieciu w trakcie logowania.</strong> <code>controllerchange</code> z service</li>
+<li class=cont>workera przeladowywal strone natychmiast, takze gdy user wpisywal haslo.</li>
+<li class=cont>Teraz przeladowanie czeka az ekran logowania i okna beda zamkniete, zadne pole</li>
+<li class=cont>nie jest aktywne, a karta jest widoczna.</li>
+</ul>
+<h4>Bezpieczenstwo bazy (Supabase)</h4>
+<ul>
+<li>Wlaczony <strong>Row-Level Security</strong> na <code>days</code>, <code>wines</code>, <code>live_state</code>, <code>ops</code>,</li>
+<li class=cont><code>allowed_users</code>. Wczesniej RLS byl wylaczony, a rejestracja jest otwarta —</li>
+<li class=cont>kazdy kto zalozyl konto mial pelny dostep do wszystkiego. Dostep ma teraz</li>
+<li class=cont>wylacznie mail z <code>allowed_users</code>; zapis do listy uzytkownikow tylko admin.</li>
+<li>Nowe tabele dostaja RLS i domyslna polityke automatycznie (trigger <code>ensure_rls</code>).</li>
+<li>Zrodlo prawdy: <code>rls-fix.sql</code> w folderze projektu (idempotentny).</li>
+</ul>
+<h4>Wczesniej niewpisane do changeloga (weszly miedzy build 20 a 21)</h4>
+<ul>
+<li>Kieliszki w statystykach: sprzedaz godzinowa (filtr + slupek) i dashboard</li>
+<li>Korekta magazynu: podglad −N butelek, powod „pomylka&quot; domyslny</li>
+<li>Kieliszek w pickerze kafelkow (tablet/telefon)</li>
+</ul>
+</div>
+<div class="karta">
+<h3>v1.0 (build 20) — pierwsza wersja telefon/tablet (PWA)</h3>
+<div class=data>2026-06-06 </div>
+<ul>
+<li>Model sprzedaży <strong>kafelki</strong>: wino → rodzaj (degustacja/butelka) → płatność (gotówka/karta/BLIK) → rabat (tylko butelka: −5%/−10%/własny %/zł)</li>
+<li>Kafelki równe, pełne nazwy (zawijanie bez obcinania), kolory wg koloru wina</li>
+<li>Pasek „↩️ Cofnij&quot; ostatnich akcji</li>
+<li>Filtr koloru wina + szukajka</li>
+<li><strong>Podsumowanie</strong> (była Kasa): degustacje/butelki/przychód/kaucje/kasa stan oczekiwany/stan początkowy + operacje wpłata/wypłata (bez liczenia banknotów)</li>
+<li><strong>Baza win</strong>: dodawanie i usuwanie win (synchronizacja Supabase)</li>
+<li>Nawigacja: Wina · Kieliszki · Podsumowanie · Statsy · Więcej (Baza/Dni/Transport/Ustawienia)</li>
+<li>PWA: offline (service worker), instalacja na ekranie głównym, tryb dzień/noc, auto-reload przy aktualizacji</li>
+<li>Hosting: GitHub Pages — https://sztukson.github.io/swieto-wina/</li>
+</ul>
+</div>
+<div class="karta">
+<h3>Wersja 0 (przed repozytorium) — maj 2026 — apka na Maca (Electron)</h3>
+<div class=data> </div>
+<p>Punkt startowy: aplikacja <strong>zainstalowana lokalnie na Macu</strong> (Electron, plik .dmg),</p>
+<p>budowana „na kolanie&quot; przed pierwszym festiwalem. Miała pelne liczenie kasy</p>
+<p>z banknotami i dzialala bez internetu, ale byla tylko na jednym komputerze —</p>
+<p>zero synchronizacji miedzy stanowiskami.</p>
+<ul>
+<li><strong>Chrzest bojowy: Festiwal Wina Janowiec, 30-31.05.2026</strong> — dwa dni policzone</li>
+<li class=cont>w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni sa dzis w archiwum</li>
+<li class=cont>w chmurze).</li>
+<li>Instalka rozeslana Mary, ktora liczyla na laptopie.</li>
+<li>Wnioski, ktore wymusily przejscie na PWA: brak synchronizacji miedzy</li>
+<li class=cont>urzadzeniami, kazda poprawka wymagala przebudowy i rozeslania .dmg, a na cudzym</li>
+<li class=cont>Macu system straszyl „nieznany deweloper&quot;.</li>
+</ul>
+<p>Ta wersja zyje dalej jako archiwum w <code>electron-app/</code> — nie uzywac jej do liczenia</p>
+<p>razem z telefonami, bo nie zna dziennika operacji (<code>ops</code>) i moze nadpisac prace innych.</p>
+</div>
+<div class="karta">
+<h3>Wersja Mac (Electron .dmg) — równolegle</h3>
+<div class=data> </div>
+<ul>
+<li>Pełna apka z liczeniem banknotów (Kasa), dla głównych stanowisk</li>
+<li>Dostała dodawanie/usuwanie win (build 20)</li>
+<li>Ta sama baza Supabase co PWA</li>
+</ul>
+</div>
+<h2 class=sekcja>Dzień po dniu</h2>
+<p class=sub>Pełny ślad z gita — każda zmiana, jaka weszła do aplikacji. Kliknij dzień, żeby rozwinąć.</p>
+<details><summary>2026-08-06 <span class=lc>· 3 zmian</span></summary>
+<div class=commit><span class=h>5c0350c</span><span>fix: koniec wracania starych danych i przeladowan w trakcie logowania (SW v15)</span></div>
+<div class=commit><span class=h>0642a05</span><span>v1.1 (build 21): wersja stabilna — synchronizacja, brak przeladowan, RLS w bazie</span></div>
+<div class=commit><span class=h>6a8210e</span><span>v1.2 (build 22): desktop jako PWA (offline + instalacja) i offline z podpisem osoby</span></div>
+</details>
+<details><summary>2026-07-11 <span class=lc>· 4 zmian</span></summary>
+<div class=commit><span class=h>380845a</span><span>feat: kieliszek wina 100ml/10zł (=2 degustacje) — kafelek, koszyk, log, live sync, cofanie</span></div>
+<div class=commit><span class=h>c8af8fa</span><span>fix: kieliszek w pickerze kafelków (tablet/phone) + SW v12</span></div>
+<div class=commit><span class=h>e10fec2</span><span>feat: kieliszki w statystykach — sprzedaż godzinowa (filtr+słupek) i dashboard, SW v13</span></div>
+<div class=commit><span class=h>fcdf3aa</span><span>feat: korekta magazynu — podgląd −N butelek, powód pomyłka domyślny, SW v14</span></div>
+</details>
+<details><summary>2026-07-10 <span class=lc>· 9 zmian</span></summary>
+<div class=commit><span class=h>ac672ee</span><span>fix: zmiana ceny wina wysyła się do chmury (sbPushWines)</span></div>
+<div class=commit><span class=h>1987661</span><span>feat: live sync — dziennik ops, polling 4s, scalanie bez nadpisywania + stan bieżący w bazie</span></div>
+<div class=commit><span class=h>c114f1e</span><span>fix live sync: guard renderowania przy pisaniu, sync stanów butelek, odpis/właściciel/wpis ręczny przez ops</span></div>
+<div class=commit><span class=h>808a86e</span><span>feat: bufor offline — operacje czekają w kolejce i wysyłają się po powrocie internetu</span></div>
+<div class=commit><span class=h>ca3a19b</span><span>feat: log z autorem (kto wpisał/usunął), sync usuwania wpisów, pełny ślad w chmurze</span></div>
+<div class=commit><span class=h>ee47c1a</span><span>feat: znacznik offline przy wpisach w logu</span></div>
+<div class=commit><span class=h>eb17737</span><span>feat: zakładka Usunięte z chmury (kto/kiedy) + przywracanie z synchronizacją</span></div>
+<div class=commit><span class=h>629f253</span><span>feat: usunięcie wpisu cofa akcję, przywrócenie dolicza z powrotem (sync)</span></div>
+<div class=commit><span class=h>a9fda67</span><span>fix: nagrobki usuniętych wpisów — nie wracają po przeładowaniu</span></div>
+</details>
+<details><summary>2026-07-09 <span class=lc>· 4 zmian</span></summary>
+<div class=commit><span class=h>dd02c91</span><span>fix: login desktop OTP zamiast hasła</span></div>
+<div class=commit><span class=h>172b542</span><span>fix: przywrócenie logowania hasłem + opis pierwszego logowania</span></div>
+<div class=commit><span class=h>8a11251</span><span>fix: import JSON wysyła dni i wina do Supabase</span></div>
+<div class=commit><span class=h>063a2a1</span><span>fix: .catch na builderze Supabase (upsert/delete) -&gt; .then z r.error</span></div>
+</details>
+<details><summary>2026-07-06 <span class=lc>· 3 zmian</span></summary>
+<div class=commit><span class=h>36ac8e8</span><span>feat: 3 wersje (desktop/tablet/phone) + landing page</span></div>
+<div class=commit><span class=h>ee77b04</span><span>fix: daty lokalne zamiast UTC (błąd po północy)</span></div>
+<div class=commit><span class=h>ea5842c</span><span>feat: filtr dat Od/Do w eksporcie CSV/XLS/PDF</span></div>
+</details>
+<details><summary>2026-06-06 <span class=lc>· 23 zmian</span></summary>
+<div class=commit><span class=h>279cc03</span><span>Święto Wina — PWA na telefon i tablet (tryb dzienny, nawigacja 5+, offline)</span></div>
+<div class=commit><span class=h>9e3ea6a</span><span>Dodaj QR i instrukcję otwierania na telefonie</span></div>
+<div class=commit><span class=h>8c9a2df</span><span>Mobile UX: pasek pod safe-area (iPhone), klik kategorii=tylko nazwy, układ tablet, cache v2</span></div>
+<div class=commit><span class=h>585fa15</span><span>Piaskownica UX: 3 modele sprzedazy + warianty nawigacji do testow</span></div>
+<div class=commit><span class=h>ca2373c</span><span>Piaskownica: kafelki domyslne, platnosc, Kolor zamiast Chipsy, ukryj scrollbary</span></div>
+<div class=commit><span class=h>5c5b726</span><span>Etykieta: Kolor wina</span></div>
+<div class=commit><span class=h>908a908</span><span>Piaskownica: cofanie akcji z loga, kafelki w kolorach wina, platnosc kolorowana</span></div>
+<div class=commit><span class=h>f6389f0</span><span>Piaskownica: popup wyboru degustacja/butelka na kafelku, kolory win w pasku cofania</span></div>
+<div class=commit><span class=h>9b6a548</span><span>Piaskownica: popup 2-krokowy wino-&gt;rodzaj-&gt;platnosc+rabat</span></div>
+<div class=commit><span class=h>0c9565f</span><span>Rabat tylko przy butelce (-5%/-10%), degustacja bez rabatu</span></div>
+<div class=commit><span class=h>e6524ee</span><span>Przycisk Wroc wiekszy i zloty</span></div>
+<div class=commit><span class=h>f9e5667</span><span>Rabat Inny: wybor %/zl + pole na liczbe, przeliczanie na zywo</span></div>
+<div class=commit><span class=h>169786e</span><span>Rabat Inny jako osobny ekran (typ %/zl + pole), powrot do kroku 2</span></div>
+<div class=commit><span class=h>12802d1</span><span>Kafelek: degustacja i butelka tej samej wielkosci obok siebie, stan pod spodem</span></div>
+<div class=commit><span class=h>9939df7</span><span>PWA: zakladka Wina = kafelki (wino-&gt;rodzaj-&gt;platnosc+rabat), Kasa-&gt;Podsumowanie (bez banknotow), nawigacja Wina/Kieliszki/Podsumowanie/Statsy/Wiecej</span></div>
+<div class=commit><span class=h>35157f1</span><span>Kafelki rownej wysokosci: nazwa rezerwuje 2 linie, liczby+stan na dole</span></div>
+<div class=commit><span class=h>3e856c8</span><span>Wina: filtr koloru wina (chipsy) + szukanie</span></div>
+<div class=commit><span class=h>c855132</span><span>Kafelki idealnie rowne (grid-auto-rows 1fr), Anuluj jako przycisk</span></div>
+<div class=commit><span class=h>2932661</span><span>Kafelki stala wysokosc 124px + nazwa clamp do 2 linii = idealnie rowne</span></div>
+<div class=commit><span class=h>3f27c9c</span><span>Dodaj widoczny numer wersji (17) do diagnozy cache</span></div>
+<div class=commit><span class=h>18b8cbb</span><span>Dodawanie/usuwanie win w Bazie (telefon+Mac) + auto-reload przy aktualizacji SW (koniec cache)</span></div>
+<div class=commit><span class=h>949db8c</span><span>Kafelki: pelne nazwy zawijane (bez obcinania) + rowne wysokosci, min-height</span></div>
+<div class=commit><span class=h>d5f3360</span><span>Porzadki: usun stare QR, CHANGELOG, wersja v1.0 (build 20)</span></div>
+</details>
+<div class=stopka>Strona generowana skryptem <code>gen-historia.py</code> z pliku <code>CHANGELOG.md</code> i historii gita. Repozytorium: <a href="https://github.com/sztukson/swieto-wina">sztukson/swieto-wina</a>.</div>
+</div></body></html>
