@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Święto Wina 🍷</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0d0b10">
 <style>
 :root {
   --bg:#0d0b10; --s1:#171220; --s2:#1e1829; --s3:#27213a; --dim:#3a3250;
@@ -312,9 +315,11 @@ function sbInit() {
     if (!initDone) {
       initDone = true;
       console.warn('Supabase timeout — tryb offline');
-      sbHideOverlay();
-      sbShowOfflineBar(true);
-      toast('📴 Brak połączenia — tryb offline');
+      if (!sbOfflineGrace(null)) {
+        sbHideOverlay();
+        sbShowOfflineBar(true);
+        toast('📴 Brak połączenia — tryb offline');
+      }
     }
   }, 4000);
 
@@ -327,12 +332,16 @@ function sbInit() {
       SB_USER = session.user;
       sbCheckAccess();
     } else {
+      // Brak sesji + brak sieci = nie ma jak sie zalogowac. Jesli ktos juz tu
+      // pracowal, wpuszczamy go z zapamietanym podpisem, zeby dalo sie liczyc.
+      if (!navigator.onLine && sbOfflineGrace(null)) return;
       sbShowLogin();
     }
   }).catch(function() {
     if (initDone) return;
     initDone = true;
     clearTimeout(offlineTimer);
+    if (sbOfflineGrace(null)) return;
     sbHideOverlay();
   });
 
@@ -347,12 +356,57 @@ function sbInit() {
   });
 }
 
+// ─────────────────────────────────────────────
+// Dostep offline: pamietamy ostatnia potwierdzona decyzje o dostepie,
+// zeby brak internetu nie wygladal jak "brak uprawnien". Bezpieczne —
+// prawdziwa brama jest w bazie (RLS), wiec operacje osoby usunietej
+// z listy i tak zostana odrzucone przy synchronizacji.
+// ─────────────────────────────────────────────
+function sbSaveAccess(email, isAdmin) {
+  try {
+    localStorage.setItem('sw_access', JSON.stringify({
+      email: (email || '').toLowerCase(), is_admin: !!isAdmin, ts: Date.now()
+    }));
+  } catch (e) {}
+}
+
+function sbCachedAccess() {
+  try { return JSON.parse(localStorage.getItem('sw_access') || 'null'); }
+  catch (e) { return null; }
+}
+
+// Wpusc do apki na podstawie zapamietanej decyzji, gdy siec nie odpowiada.
+function sbOfflineGrace(userEmail) {
+  var c = sbCachedAccess();
+  // Nikt sie tu jeszcze nie logowal, ale ktos podpisal sie w trybie offline —
+  // uzyj tego podpisu, zeby nie pytac o niego przy kazdym otwarciu.
+  if ((!c || !c.email) && !userEmail) {
+    try {
+      var w = localStorage.getItem('sw_offline_who');
+      if (w) c = { email: w, is_admin: false, manual: true };
+    } catch (e) {}
+  }
+  if (!c || !c.email) return false;
+  if (userEmail && c.email !== (userEmail || '').toLowerCase()) return false;
+  if (!SB_USER) SB_USER = { email: c.email };
+  SB_USER.is_admin = c.is_admin;
+  if (c.manual) SB_USER.offline_manual = true;
+  sbHideOverlay();
+  sbShowOfflineBar(true);
+  if (typeof renderTab === 'function') renderTab();
+  // polling i tak probuje co 4 s — po powrocie sieci sam dosle kolejke
+  if (typeof startOpsPolling === 'function') startOpsPolling();
+  toast('📴 Brak połączenia — pracujesz lokalnie. Dośle się po powrocie sieci.', 4500);
+  return true;
+}
+
 function sbCheckAccess() {
   if (!_sb || !SB_USER) { sbShowLogin(); return; }
   var userEmail = (SB_USER.email || '').toLowerCase();
   // Fallback: admin zawsze ma dostęp
   if (userEmail === SB_ADMIN.toLowerCase()) {
     SB_USER.is_admin = true;
+    sbSaveAccess(userEmail, true);
     sbHideOverlay();
     sbLoadData();
     srvDot('on');
@@ -360,14 +414,22 @@ function sbCheckAccess() {
   }
   _sb.from('allowed_users').select('is_admin').eq('email', userEmail).maybeSingle()
     .then(function(res) {
-      if (res.error) { console.error('sbCheckAccess error:', res.error); sbShowAccessDenied(); return; }
+      if (res.error) {
+        console.error('sbCheckAccess error:', res.error);
+        if (!sbOfflineGrace(userEmail)) sbShowAccessDenied();
+        return;
+      }
       if (!res.data) { sbShowAccessDenied(); return; }
       SB_USER.is_admin = res.data.is_admin;
+      sbSaveAccess(userEmail, res.data.is_admin);
       sbHideOverlay();
       sbLoadData();
       srvDot('on');
     })
-    .catch(function(e) { console.error('sbCheckAccess catch:', e); sbShowAccessDenied(); });
+    .catch(function(e) {
+      console.error('sbCheckAccess catch:', e);
+      if (!sbOfflineGrace(userEmail)) sbShowAccessDenied();
+    });
 }
 
 function sbLoadData() {
@@ -403,7 +465,7 @@ function sbLoadData() {
     sbPushLive();
   }).catch(function(e) {
     console.error('sbLoadData error:', e);
-    srvDot('err');
+    srvProblem();
     renderTab();
   });
 }
@@ -412,7 +474,7 @@ function sbPushDay(snap) {
   if (!_sb || !SB_USER) return;
   _sb.from('days').upsert({ id: snap.id, day_data: snap, created_by: SB_USER.email, updated_at: new Date().toISOString() })
     .then(function(){ srvDot('on'); })
-    .catch(function(e){ console.error('sbPushDay:', e); srvDot('err'); });
+    .catch(function(e){ console.error('sbPushDay:', e); srvProblem(); });
 }
 
 function sbDeleteDay(id) {
@@ -459,7 +521,7 @@ function sbFlushOutbox(){
   var batch = SB_OUTBOX.slice(0, 100);
   var rows = batch.map(function(e){ return { id:e.id, ts:e.ts, device:SB_DEVICE, user_email:SB_USER.email, entry:e }; });
   _sb.from('ops').upsert(rows, {onConflict:'id', ignoreDuplicates:true}).then(function(r){
-    if(r.error){ srvDot('err'); return; }
+    if(r.error){ srvProblem(); return; }
     SB_OUTBOX = SB_OUTBOX.filter(function(e){ return !batch.some(function(b){ return b.id===e.id; }); });
     sbOutboxSave();
     srvDot('on');
@@ -647,7 +709,7 @@ window.addEventListener('online', function(){
 });
 window.addEventListener('offline', function(){
   toast('📴 Brak internetu — liczę lokalnie, wyślę po połączeniu', 4000);
-  srvDot('err');
+  srvProblem();
 });
 
 
@@ -728,10 +790,56 @@ function sbLogout() {
 }
 
 function sbOfflineMode() {
-  SB_USER = null;
+  // Pytamy KTO pracuje. Bez tego operacje offline sa anonimowe (entry.by = null)
+  // i po synchronizacji nie ma jak ustalic, kto co wklepal.
+  var c = sbCachedAccess();
+  var sugestia = (c && c.email) || '';
+  try { sugestia = sugestia || localStorage.getItem('sw_offline_who') || ''; } catch (e) {}
+  var h = '<div id="offwho-m" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)">';
+  h += '<div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:22px 20px;width:100%;max-width:330px;display:flex;flex-direction:column;gap:14px">';
+  h += '<div style="font-family:Georgia,serif;font-size:17px;color:var(--gold)">📴 Praca offline</div>';
+  h += '<div style="font-size:12px;color:var(--muted);line-height:1.6">Kto będzie liczył? Podpiszę tym każdą operację, żeby po powrocie internetu było wiadomo, kto co wprowadził.</div>';
+  h += '<input id="offwho-input" type="text" value="' + esc(sugestia) + '" placeholder="np. Mary albo mary@…" autocapitalize="words" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rsm);color:var(--text);font-size:15px;padding:11px 12px;outline:none">';
+  h += '<div id="offwho-err" style="display:none;font-size:12px;color:var(--wine2)">Wpisz imię albo mail — bez tego nie podpiszę operacji.</div>';
+  h += '<div style="display:flex;gap:8px">';
+  h += '<button onclick="document.getElementById(\'offwho-m\').remove()" style="flex:1;background:var(--s3);border:1px solid var(--border);color:var(--muted);border-radius:var(--rsm);padding:11px;font-size:13px;font-weight:700;cursor:pointer">Anuluj</button>';
+  h += '<button onclick="sbOfflineStart()" style="flex:2;background:var(--wine);border:none;color:#fff;border-radius:var(--rsm);padding:11px;font-size:13px;font-weight:700;cursor:pointer">Zaczynam liczyć →</button>';
+  h += '</div></div></div>';
+  document.body.insertAdjacentHTML('beforeend', h);
+  setTimeout(function() {
+    var el = document.getElementById('offwho-input');
+    if (el) { el.focus(); el.select(); }
+  }, 100);
+}
+
+function sbOfflineStart() {
+  var el = document.getElementById('offwho-input');
+  var kto = el ? (el.value || '').trim() : '';
+  if (!kto) {
+    var err = document.getElementById('offwho-err');
+    if (err) err.style.display = 'block';
+    if (el) el.focus();
+    return;
+  }
+  try { localStorage.setItem('sw_offline_who', kto); } catch (e) {}
+  // Tozsamosc lokalna: operacje dostaja podpis, a kolejka (SB_OUTBOX) ma komu
+  // je przypisac. Wyslanie do bazy nastapi, gdy ktos zaloguje sie na tym
+  // urzadzeniu — podpis `by` zostaje ten wpisany tutaj.
+  SB_USER = { email: kto, is_admin: false, offline_manual: true };
+  var m = document.getElementById('offwho-m');
+  if (m) m.remove();
   sbHideOverlay();
   sbShowOfflineBar(true);
-  toast('📴 Tryb offline — dane lokalne');
+  if (typeof renderTab === 'function') renderTab();
+  if (typeof startOpsPolling === 'function') startOpsPolling();
+  toast('📴 Offline — zapisuję jako „' + kto + '". Dośle się po zalogowaniu.', 5000);
+}
+
+function srvProblem() {
+  // Brak sieci albo swiadomy tryb offline to nie awaria — nie strasz "BLAD SYNC".
+  var offline = (typeof navigator !== 'undefined' && !navigator.onLine) ||
+                (typeof SB_USER !== 'undefined' && SB_USER && SB_USER.offline_manual);
+  srvDot(offline ? 'off' : 'err');
 }
 
 function sbShowOfflineBar(show) {
@@ -906,7 +1014,7 @@ function sbPushLive() {
     user_email: 'shared',
     data: S,
     updated_at: new Date().toISOString()
-  }).then(function(r){ if(r.error){ console.error('sbPushLive:', r.error.message); srvDot('err'); } else srvDot('on'); });
+  }).then(function(r){ if(r.error){ console.error('sbPushLive:', r.error.message); srvProblem(); } else srvDot('on'); });
 }
 
 function load() {
@@ -4929,6 +5037,47 @@ var FIRST_RUN = !localStorage.getItem('sw_v3'); // pusta pamięć = pierwsze uru
 load();
 go('home');
 sbInit();
+
+// ─────────────────────────────────────────────
+// PWA — service worker: offline + instalacja jako okno w Docku
+// Dane i tak lecą przez kolejkę (SB_OUTBOX) i dosyłają się po powrocie sieci,
+// SW dokłada brakujący element: sam plik aplikacji dostępny bez internetu.
+// ─────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  var _swRefreshing = false;
+  // Nie przeladowuj strony, gdy uzytkownik jest w trakcie czegokolwiek
+  // (ekran logowania, otwarte okno, wpisywanie w pole).
+  var _swCanReload = function() {
+    try {
+      var ov = document.getElementById('sb-login-overlay');
+      if (ov && ov.style.display !== 'none' && ov.offsetParent !== null) return false;
+      if (document.querySelector('[id$="-m"], .modal-ov')) return false;
+      var ae = document.activeElement;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return false;
+      if (document.visibilityState === 'hidden') return false;
+    } catch (e) {}
+    return true;
+  };
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (_swRefreshing) return;
+    (function waitSafe() {
+      if (!_swCanReload()) { setTimeout(waitSafe, 3000); return; }
+      _swRefreshing = true; window.location.reload();
+    })();
+  });
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+      reg.update();
+      if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+      reg.addEventListener('updatefound', function() {
+        var nw = reg.installing;
+        if (nw) nw.addEventListener('statechange', function() {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) nw.postMessage('skipWaiting');
+        });
+      });
+    }).catch(function(e) { console.warn('SW:', e); });
+  });
+}
 
 // Pierwsze uruchomienie z wbudowanymi danymi — zapytaj czy wczytać
 var OFFERED_BUNDLE = false;

@@ -7,6 +7,34 @@ Schemat: **vMAJOR.MINOR** (produkt) + **build N** (numer wdrożenia, do diagnozy
 
 ---
 
+## v1.2 (build 22) — 2026-08-06 — offline na komputerze + wiadomo kto liczyl
+
+**Wersja komputerowa dziala teraz offline i da sie ja zainstalowac.** Wczesniej
+`/desktop/` byla jedyna wersja bez service workera i manifestu — czyli bez
+internetu nie otwierala sie w ogole. Teraz w Chrome mozna kliknac „Zainstaluj"
+i dostac osobne okno w Docku, dzialajace bez sieci. Bez .dmg, bez Gatekeepera.
+
+### Offline z zachowaniem tozsamosci (najwazniejsze)
+Wczesniej brak internetu wygladal jak brak uprawnien: `sbCheckAccess` odpytywal
+`allowed_users`, zapytanie padalo i user (poza adminem, ktory ma fallback)
+dostawal ekran „⛔ Brak dostepu". A jesli wszedl przyciskiem „Tryb offline",
+to operacje szly do kolejki **bez podpisu** (`entry.by = null`) i nigdy sie nie
+wysylaly. Zmiany:
+- po kazdym udanym sprawdzeniu dostepu zapisujemy decyzje lokalnie (`sw_access`),
+  a gdy siec nie odpowiada — wpuszczamy na jej podstawie (pasek 📴 OFFLINE)
+- „Tryb offline" **pyta, kto liczy**, i tym podpisuje kazda operacje; podpis
+  jest pamietany, wiec przy kolejnym otwarciu bez sieci apka nie pyta ponownie
+- kolejka (`sw_outbox`) ma komu przypisac operacje, wiec po powrocie sieci /
+  zalogowaniu sama je dosyła — sprawdzone end-to-end na prawdziwej bazie
+- w logu zostaje: **kto** (`by`), **dokladna godzina kliknięcia** (`ts`) i
+  znacznik **📴 offline**; osobno w bazie widac godzine wyslania (`created_at`)
+- brak sieci nie pokazuje sie juz jako „⚠️ BLAD SYNC" (nowe `srvProblem()`)
+
+Bezpieczenstwo bez zmian: prawdziwa brama to RLS w bazie, wiec operacje osoby
+usunietej z `allowed_users` zostana odrzucone przy synchronizacji.
+
+---
+
 ## v1.1 (build 21) — 2026-08-06 — wersja stabilna po naprawie synchronizacji i bezpieczenstwa
 
 **To jest oznaczona wersja dzialajaca (tag `v1.1`).** Sprawdzone: 5 dni w archiwum,
