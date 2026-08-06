@@ -7,63 +7,63 @@ Schemat: **vMAJOR.MINOR** (produkt) + **build N** (numer wdrożenia, do diagnozy
 
 ---
 
-## v1.2 (build 22) — 2026-08-06 — offline na komputerze + wiadomo kto liczyl
+## v1.2 (build 22) — 2026-08-06 — offline na komputerze + wiadomo, kto liczył
 
-**Wersja komputerowa dziala teraz offline i da sie ja zainstalowac.** Wczesniej
-`/desktop/` byla jedyna wersja bez service workera i manifestu — czyli bez
-internetu nie otwierala sie w ogole. Teraz w Chrome mozna kliknac „Zainstaluj"
-i dostac osobne okno w Docku, dzialajace bez sieci. Bez .dmg, bez Gatekeepera.
+**Wersja komputerowa działa teraz offline i da się ją zainstalować.** Wcześniej
+`/desktop/` była jedyną wersją bez service workera i manifestu — czyli bez
+internetu nie otwierała się w ogóle. Teraz w Chrome można kliknąć „Zainstaluj"
+i dostać osobne okno w Docku, działające bez sieci. Bez pliku .dmg, bez ostrzeżeń
+systemu o nieznanym deweloperze.
 
-### Offline z zachowaniem tozsamosci (najwazniejsze)
-Wczesniej brak internetu wygladal jak brak uprawnien: `sbCheckAccess` odpytywal
-`allowed_users`, zapytanie padalo i user (poza adminem, ktory ma fallback)
-dostawal ekran „⛔ Brak dostepu". A jesli wszedl przyciskiem „Tryb offline",
-to operacje szly do kolejki **bez podpisu** (`entry.by = null`) i nigdy sie nie
-wysylaly. Zmiany:
-- po kazdym udanym sprawdzeniu dostepu zapisujemy decyzje lokalnie (`sw_access`),
-  a gdy siec nie odpowiada — wpuszczamy na jej podstawie (pasek 📴 OFFLINE)
-- „Tryb offline" **pyta, kto liczy**, i tym podpisuje kazda operacje; podpis
-  jest pamietany, wiec przy kolejnym otwarciu bez sieci apka nie pyta ponownie
-- kolejka (`sw_outbox`) ma komu przypisac operacje, wiec po powrocie sieci /
-  zalogowaniu sama je dosyła — sprawdzone end-to-end na prawdziwej bazie
-- w logu zostaje: **kto** (`by`), **dokladna godzina kliknięcia** (`ts`) i
-  znacznik **📴 offline**; osobno w bazie widac godzine wyslania (`created_at`)
-- brak sieci nie pokazuje sie juz jako „⚠️ BLAD SYNC" (nowe `srvProblem()`)
+### Offline z zachowaniem tożsamości (najważniejsza zmiana)
+Wcześniej brak internetu wyglądał jak brak uprawnień: sprawdzanie dostępu
+odpytywało bazę, zapytanie padało i użytkownik (poza adminem, który miał obejście)
+dostawał ekran „⛔ Brak dostępu". A jeśli wszedł przyciskiem „Tryb offline", jego
+operacje szły do kolejki **bez podpisu** i nigdy się nie wysyłały. Co się zmieniło:
+- po każdym udanym sprawdzeniu dostępu zapamiętujemy decyzję na urządzeniu, a gdy
+  sieć nie odpowiada — wpuszczamy na jej podstawie, z paskiem 📴 OFFLINE
+- „Tryb offline" **pyta, kto liczy**, i tym podpisuje każdą operację; podpis jest
+  pamiętany, więc przy kolejnym otwarciu bez sieci apka nie pyta ponownie
+- kolejka ma komu przypisać operacje, więc po powrocie internetu sama je dosyła —
+  sprawdzone od początku do końca na prawdziwej bazie
+- w logu zostaje **kto**, **dokładna godzina kliknięcia** i znacznik **📴 offline**;
+  w bazie widać osobno godzinę wysłania
+- brak sieci nie wyświetla się już jako „⚠️ BŁĄD SYNC"
 
-Bezpieczenstwo bez zmian: prawdziwa brama to RLS w bazie, wiec operacje osoby
-usunietej z `allowed_users` zostana odrzucone przy synchronizacji.
+Bezpieczeństwo bez zmian: prawdziwą bramą jest RLS w bazie, więc operacje osoby
+usuniętej z listy dostępu zostaną odrzucone przy synchronizacji.
 
 ---
 
-## v1.1 (build 21) — 2026-08-06 — wersja stabilna po naprawie synchronizacji i bezpieczenstwa
+## v1.1 (build 21) — 2026-08-06 — wersja stabilna po naprawie synchronizacji i bezpieczeństwa
 
-**To jest oznaczona wersja dzialajaca (tag `v1.1`).** Sprawdzone: 5 dni w archiwum,
-1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor 0 bledow.
+**Pierwsza oznaczona wersja działająca (tag `v1.1`).** Sprawdzone: 5 dni w archiwum,
+1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor bez błędów.
 
 ### Naprawione
-- **Stare dane wracaly mimo zapisanych dni.** `sbPushLive` stemplowal snapshot
-  znacznikiem `_opTs = SB_LASTOP` (czas ostatniej operacji). Gdy nikt nic nie
-  klika, ta wartosc stoi w miejscu, wiec kolejne snapshoty mialy identyczny
-  znacznik, a warunek przyjecia byl `>=` — kazde logowanie i kazdy `sync-full`
-  przyjmowaly stary stan. Teraz znacznik to rosnacy zegar, a snapshot jest
-  przyjmowany tylko gdy faktycznie nowszy (`>`).
-- **Odswiezanie po kliknieciu w trakcie logowania.** `controllerchange` z service
-  workera przeladowywal strone natychmiast, takze gdy user wpisywal haslo.
-  Teraz przeladowanie czeka az ekran logowania i okna beda zamkniete, zadne pole
-  nie jest aktywne, a karta jest widoczna.
+- **Stare dane wracały mimo zapisanych dni.** Snapshot stanu był stemplowany czasem
+  ostatniej operacji, a ta wartość stoi w miejscu, gdy nikt nic nie klika — więc
+  kolejne snapshoty miały identyczny znacznik i przy warunku „nowszy lub równy"
+  każde logowanie przyjmowało stary stan. Teraz znacznik to rosnący zegar, a stan
+  z chmury jest przyjmowany tylko wtedy, gdy faktycznie jest nowszy.
+- **Odświeżanie po kliknięciu w trakcie logowania.** Nowa wersja service workera
+  przeładowywała stronę natychmiast, także gdy ktoś wpisywał hasło. Teraz
+  przeładowanie czeka, aż ekran logowania i okna będą zamknięte, żadne pole nie
+  jest aktywne, a karta jest widoczna.
 
-### Bezpieczenstwo bazy (Supabase)
-- Wlaczony **Row-Level Security** na `days`, `wines`, `live_state`, `ops`,
-  `allowed_users`. Wczesniej RLS byl wylaczony, a rejestracja jest otwarta —
-  kazdy kto zalozyl konto mial pelny dostep do wszystkiego. Dostep ma teraz
-  wylacznie mail z `allowed_users`; zapis do listy uzytkownikow tylko admin.
-- Nowe tabele dostaja RLS i domyslna polityke automatycznie (trigger `ensure_rls`).
-- Zrodlo prawdy: `rls-fix.sql` w folderze projektu (idempotentny).
+### Bezpieczeństwo bazy (Supabase)
+- Włączony **Row-Level Security** na `days`, `wines`, `live_state`, `ops`
+  i `allowed_users`. Wcześniej RLS był wyłączony, a rejestracja jest otwarta —
+  czyli każdy, kto założył konto, miał pełny dostęp do wszystkiego, łącznie
+  z nadaniem sobie uprawnień administratora. Teraz dostęp ma wyłącznie mail
+  z listy `allowed_users`, a zapis do tej listy tylko administrator.
+- Nowe tabele dostają RLS i domyślną politykę automatycznie.
+- Źródło prawdy: `rls-fix.sql` w folderze projektu (można puścić ponownie).
 
-### Wczesniej niewpisane do changeloga (weszly miedzy build 20 a 21)
-- Kieliszki w statystykach: sprzedaz godzinowa (filtr + slupek) i dashboard
-- Korekta magazynu: podglad −N butelek, powod „pomylka" domyslny
-- Kieliszek w pickerze kafelkow (tablet/telefon)
+### Weszło wcześniej, nie było opisane
+- Kieliszki w statystykach: sprzedaż godzinowa (filtr i słupek) oraz dashboard
+- Korekta magazynu: podgląd −N butelek, powód „pomyłka" jako domyślny
+- Kieliszek w wyborze na kafelku (tablet i telefon)
 
 ---
 
@@ -82,22 +82,22 @@ usunietej z `allowed_users` zostana odrzucone przy synchronizacji.
 ## Wersja 0 (przed repozytorium) — maj 2026 — apka na Maca (Electron)
 
 Punkt startowy: aplikacja **zainstalowana lokalnie na Macu** (Electron, plik .dmg),
-budowana „na kolanie" przed pierwszym festiwalem. Miała pelne liczenie kasy
-z banknotami i dzialala bez internetu, ale byla tylko na jednym komputerze —
-zero synchronizacji miedzy stanowiskami.
+budowana przed pierwszym festiwalem. Miała pełne liczenie kasy z banknotami
+i działała bez internetu, ale była tylko na jednym komputerze — zero synchronizacji
+między stanowiskami.
 
-- **Chrzest bojowy: Festiwal Wina Janowiec, 30-31.05.2026** — dwa dni policzone
-  w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni sa dzis w archiwum
+- **Chrzest bojowy: Festiwal Wina Janowiec, 30–31.05.2026** — dwa dni policzone
+  w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni są dziś w archiwum
   w chmurze).
-- Instalka rozeslana Mary, ktora liczyla na laptopie.
-- Wnioski, ktore wymusily przejscie na PWA: brak synchronizacji miedzy
-  urzadzeniami, kazda poprawka wymagala przebudowy i rozeslania .dmg, a na cudzym
-  Macu system straszyl „nieznany deweloper".
+- Instalka rozesłana Mary, która liczyła na laptopie.
+- Wnioski, które wymusiły przejście na PWA: brak synchronizacji między
+  urządzeniami, każda poprawka wymagała przebudowania i rozesłania pliku .dmg,
+  a na cudzym Macu system straszył ostrzeżeniem o nieznanym deweloperze.
 
-Ta wersja zyje dalej jako archiwum w `electron-app/` — nie uzywac jej do liczenia
-razem z telefonami, bo nie zna dziennika operacji (`ops`) i moze nadpisac prace innych.
+Ta wersja żyje dalej jako archiwum w `electron-app/`. Instalka z 6.06 nie zna
+dziennika operacji, więc nie wolno jej używać do liczenia równolegle z telefonami —
+od 6.08.2026 w folderze `INSTALACJA/` leży świeży .dmg zbudowany z aktualnego kodu.
 
----
 
 ## Wersja Mac (Electron .dmg) — równolegle
 - Pełna apka z liczeniem banknotów (Kasa), dla głównych stanowisk

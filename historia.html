@@ -52,71 +52,71 @@ color:var(--muted);font-size:12px}
 <h1>🍷 Historia Święta Wina</h1>
 <div class=sub>Jak ta aplikacja powstawała — wersja po wersji, od pierwszego dnia do dziś. Aktualnie: <strong>v1.2 (build 22)</strong></div>
 <div class=stat>
-<div><b>46</b><span>zmian w kodzie</span></div>
+<div><b>47</b><span>zmian w kodzie</span></div>
 <div><b>6</b><span>dni pracy</span></div>
 <div><b>5</b><span>opisanych wersji</span></div>
 <div><b>2026-06-06</b><span>pierwszy commit</span></div>
 </div>
 <h2 class=sekcja>Wersje</h2>
 <div class="karta teraz">
-<h3>v1.2 (build 22) — offline na komputerze + wiadomo kto liczyl</h3>
+<h3>v1.2 (build 22) — offline na komputerze + wiadomo, kto liczył</h3>
 <div class=data>2026-08-06 <span class=pill>tag v1.2</span><span class=pill>aktualna</span></div>
-<p><strong>Wersja komputerowa dziala teraz offline i da sie ja zainstalowac.</strong> Wczesniej</p>
-<p><code>/desktop/</code> byla jedyna wersja bez service workera i manifestu — czyli bez</p>
-<p>internetu nie otwierala sie w ogole. Teraz w Chrome mozna kliknac „Zainstaluj&quot;</p>
-<p>i dostac osobne okno w Docku, dzialajace bez sieci. Bez .dmg, bez Gatekeepera.</p>
-<h4>Offline z zachowaniem tozsamosci (najwazniejsze)</h4>
-<p>Wczesniej brak internetu wygladal jak brak uprawnien: <code>sbCheckAccess</code> odpytywal</p>
-<p><code>allowed_users</code>, zapytanie padalo i user (poza adminem, ktory ma fallback)</p>
-<p>dostawal ekran „⛔ Brak dostepu&quot;. A jesli wszedl przyciskiem „Tryb offline&quot;,</p>
-<p>to operacje szly do kolejki <strong>bez podpisu</strong> (<code>entry.by = null</code>) i nigdy sie nie</p>
-<p>wysylaly. Zmiany:</p>
+<p><strong>Wersja komputerowa działa teraz offline i da się ją zainstalować.</strong> Wcześniej</p>
+<p><code>/desktop/</code> była jedyną wersją bez service workera i manifestu — czyli bez</p>
+<p>internetu nie otwierała się w ogóle. Teraz w Chrome można kliknąć „Zainstaluj&quot;</p>
+<p>i dostać osobne okno w Docku, działające bez sieci. Bez pliku .dmg, bez ostrzeżeń</p>
+<p>systemu o nieznanym deweloperze.</p>
+<h4>Offline z zachowaniem tożsamości (najważniejsza zmiana)</h4>
+<p>Wcześniej brak internetu wyglądał jak brak uprawnień: sprawdzanie dostępu</p>
+<p>odpytywało bazę, zapytanie padało i użytkownik (poza adminem, który miał obejście)</p>
+<p>dostawał ekran „⛔ Brak dostępu&quot;. A jeśli wszedł przyciskiem „Tryb offline&quot;, jego</p>
+<p>operacje szły do kolejki <strong>bez podpisu</strong> i nigdy się nie wysyłały. Co się zmieniło:</p>
 <ul>
-<li>po kazdym udanym sprawdzeniu dostepu zapisujemy decyzje lokalnie (<code>sw_access</code>),</li>
-<li class=cont>a gdy siec nie odpowiada — wpuszczamy na jej podstawie (pasek 📴 OFFLINE)</li>
-<li>„Tryb offline&quot; <strong>pyta, kto liczy</strong>, i tym podpisuje kazda operacje; podpis</li>
-<li class=cont>jest pamietany, wiec przy kolejnym otwarciu bez sieci apka nie pyta ponownie</li>
-<li>kolejka (<code>sw_outbox</code>) ma komu przypisac operacje, wiec po powrocie sieci /</li>
-<li class=cont>zalogowaniu sama je dosyła — sprawdzone end-to-end na prawdziwej bazie</li>
-<li>w logu zostaje: <strong>kto</strong> (<code>by</code>), <strong>dokladna godzina kliknięcia</strong> (<code>ts</code>) i</li>
-<li class=cont>znacznik <strong>📴 offline</strong>; osobno w bazie widac godzine wyslania (<code>created_at</code>)</li>
-<li>brak sieci nie pokazuje sie juz jako „⚠️ BLAD SYNC&quot; (nowe <code>srvProblem()</code>)</li>
+<li>po każdym udanym sprawdzeniu dostępu zapamiętujemy decyzję na urządzeniu, a gdy</li>
+<li class=cont>sieć nie odpowiada — wpuszczamy na jej podstawie, z paskiem 📴 OFFLINE</li>
+<li>„Tryb offline&quot; <strong>pyta, kto liczy</strong>, i tym podpisuje każdą operację; podpis jest</li>
+<li class=cont>pamiętany, więc przy kolejnym otwarciu bez sieci apka nie pyta ponownie</li>
+<li>kolejka ma komu przypisać operacje, więc po powrocie internetu sama je dosyła —</li>
+<li class=cont>sprawdzone od początku do końca na prawdziwej bazie</li>
+<li>w logu zostaje <strong>kto</strong>, <strong>dokładna godzina kliknięcia</strong> i znacznik <strong>📴 offline</strong>;</li>
+<li class=cont>w bazie widać osobno godzinę wysłania</li>
+<li>brak sieci nie wyświetla się już jako „⚠️ BŁĄD SYNC&quot;</li>
 </ul>
-<p>Bezpieczenstwo bez zmian: prawdziwa brama to RLS w bazie, wiec operacje osoby</p>
-<p>usunietej z <code>allowed_users</code> zostana odrzucone przy synchronizacji.</p>
+<p>Bezpieczeństwo bez zmian: prawdziwą bramą jest RLS w bazie, więc operacje osoby</p>
+<p>usuniętej z listy dostępu zostaną odrzucone przy synchronizacji.</p>
 </div>
 <div class="karta">
-<h3>v1.1 (build 21) — wersja stabilna po naprawie synchronizacji i bezpieczenstwa</h3>
+<h3>v1.1 (build 21) — wersja stabilna po naprawie synchronizacji i bezpieczeństwa</h3>
 <div class=data>2026-08-06 <span class=pill>tag v1.1</span></div>
-<p><strong>To jest oznaczona wersja dzialajaca (tag <code>v1.1</code>).</strong> Sprawdzone: 5 dni w archiwum,</p>
-<p>1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor 0 bledow.</p>
+<p><strong>Pierwsza oznaczona wersja działająca (tag <code>v1.1</code>).</strong> Sprawdzone: 5 dni w archiwum,</p>
+<p>1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor bez błędów.</p>
 <h4>Naprawione</h4>
 <ul>
-<li><strong>Stare dane wracaly mimo zapisanych dni.</strong> <code>sbPushLive</code> stemplowal snapshot</li>
-<li class=cont>znacznikiem <code>_opTs = SB_LASTOP</code> (czas ostatniej operacji). Gdy nikt nic nie</li>
-<li class=cont>klika, ta wartosc stoi w miejscu, wiec kolejne snapshoty mialy identyczny</li>
-<li class=cont>znacznik, a warunek przyjecia byl <code>&gt;=</code> — kazde logowanie i kazdy <code>sync-full</code></li>
-<li class=cont>przyjmowaly stary stan. Teraz znacznik to rosnacy zegar, a snapshot jest</li>
-<li class=cont>przyjmowany tylko gdy faktycznie nowszy (<code>&gt;</code>).</li>
-<li><strong>Odswiezanie po kliknieciu w trakcie logowania.</strong> <code>controllerchange</code> z service</li>
-<li class=cont>workera przeladowywal strone natychmiast, takze gdy user wpisywal haslo.</li>
-<li class=cont>Teraz przeladowanie czeka az ekran logowania i okna beda zamkniete, zadne pole</li>
-<li class=cont>nie jest aktywne, a karta jest widoczna.</li>
+<li><strong>Stare dane wracały mimo zapisanych dni.</strong> Snapshot stanu był stemplowany czasem</li>
+<li class=cont>ostatniej operacji, a ta wartość stoi w miejscu, gdy nikt nic nie klika — więc</li>
+<li class=cont>kolejne snapshoty miały identyczny znacznik i przy warunku „nowszy lub równy&quot;</li>
+<li class=cont>każde logowanie przyjmowało stary stan. Teraz znacznik to rosnący zegar, a stan</li>
+<li class=cont>z chmury jest przyjmowany tylko wtedy, gdy faktycznie jest nowszy.</li>
+<li><strong>Odświeżanie po kliknięciu w trakcie logowania.</strong> Nowa wersja service workera</li>
+<li class=cont>przeładowywała stronę natychmiast, także gdy ktoś wpisywał hasło. Teraz</li>
+<li class=cont>przeładowanie czeka, aż ekran logowania i okna będą zamknięte, żadne pole nie</li>
+<li class=cont>jest aktywne, a karta jest widoczna.</li>
 </ul>
-<h4>Bezpieczenstwo bazy (Supabase)</h4>
+<h4>Bezpieczeństwo bazy (Supabase)</h4>
 <ul>
-<li>Wlaczony <strong>Row-Level Security</strong> na <code>days</code>, <code>wines</code>, <code>live_state</code>, <code>ops</code>,</li>
-<li class=cont><code>allowed_users</code>. Wczesniej RLS byl wylaczony, a rejestracja jest otwarta —</li>
-<li class=cont>kazdy kto zalozyl konto mial pelny dostep do wszystkiego. Dostep ma teraz</li>
-<li class=cont>wylacznie mail z <code>allowed_users</code>; zapis do listy uzytkownikow tylko admin.</li>
-<li>Nowe tabele dostaja RLS i domyslna polityke automatycznie (trigger <code>ensure_rls</code>).</li>
-<li>Zrodlo prawdy: <code>rls-fix.sql</code> w folderze projektu (idempotentny).</li>
+<li>Włączony <strong>Row-Level Security</strong> na <code>days</code>, <code>wines</code>, <code>live_state</code>, <code>ops</code></li>
+<li class=cont>i <code>allowed_users</code>. Wcześniej RLS był wyłączony, a rejestracja jest otwarta —</li>
+<li class=cont>czyli każdy, kto założył konto, miał pełny dostęp do wszystkiego, łącznie</li>
+<li class=cont>z nadaniem sobie uprawnień administratora. Teraz dostęp ma wyłącznie mail</li>
+<li class=cont>z listy <code>allowed_users</code>, a zapis do tej listy tylko administrator.</li>
+<li>Nowe tabele dostają RLS i domyślną politykę automatycznie.</li>
+<li>Źródło prawdy: <code>rls-fix.sql</code> w folderze projektu (można puścić ponownie).</li>
 </ul>
-<h4>Wczesniej niewpisane do changeloga (weszly miedzy build 20 a 21)</h4>
+<h4>Weszło wcześniej, nie było opisane</h4>
 <ul>
-<li>Kieliszki w statystykach: sprzedaz godzinowa (filtr + slupek) i dashboard</li>
-<li>Korekta magazynu: podglad −N butelek, powod „pomylka&quot; domyslny</li>
-<li>Kieliszek w pickerze kafelkow (tablet/telefon)</li>
+<li>Kieliszki w statystykach: sprzedaż godzinowa (filtr i słupek) oraz dashboard</li>
+<li>Korekta magazynu: podgląd −N butelek, powód „pomyłka&quot; jako domyślny</li>
+<li>Kieliszek w wyborze na kafelku (tablet i telefon)</li>
 </ul>
 </div>
 <div class="karta">
@@ -138,20 +138,21 @@ color:var(--muted);font-size:12px}
 <h3>Wersja 0 (przed repozytorium) — maj 2026 — apka na Maca (Electron)</h3>
 <div class=data> </div>
 <p>Punkt startowy: aplikacja <strong>zainstalowana lokalnie na Macu</strong> (Electron, plik .dmg),</p>
-<p>budowana „na kolanie&quot; przed pierwszym festiwalem. Miała pelne liczenie kasy</p>
-<p>z banknotami i dzialala bez internetu, ale byla tylko na jednym komputerze —</p>
-<p>zero synchronizacji miedzy stanowiskami.</p>
+<p>budowana przed pierwszym festiwalem. Miała pełne liczenie kasy z banknotami</p>
+<p>i działała bez internetu, ale była tylko na jednym komputerze — zero synchronizacji</p>
+<p>między stanowiskami.</p>
 <ul>
-<li><strong>Chrzest bojowy: Festiwal Wina Janowiec, 30-31.05.2026</strong> — dwa dni policzone</li>
-<li class=cont>w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni sa dzis w archiwum</li>
+<li><strong>Chrzest bojowy: Festiwal Wina Janowiec, 30–31.05.2026</strong> — dwa dni policzone</li>
+<li class=cont>w tej wersji (241 i 84 degustacje, 57 i 30 butelek; oba dni są dziś w archiwum</li>
 <li class=cont>w chmurze).</li>
-<li>Instalka rozeslana Mary, ktora liczyla na laptopie.</li>
-<li>Wnioski, ktore wymusily przejscie na PWA: brak synchronizacji miedzy</li>
-<li class=cont>urzadzeniami, kazda poprawka wymagala przebudowy i rozeslania .dmg, a na cudzym</li>
-<li class=cont>Macu system straszyl „nieznany deweloper&quot;.</li>
+<li>Instalka rozesłana Mary, która liczyła na laptopie.</li>
+<li>Wnioski, które wymusiły przejście na PWA: brak synchronizacji między</li>
+<li class=cont>urządzeniami, każda poprawka wymagała przebudowania i rozesłania pliku .dmg,</li>
+<li class=cont>a na cudzym Macu system straszył ostrzeżeniem o nieznanym deweloperze.</li>
 </ul>
-<p>Ta wersja zyje dalej jako archiwum w <code>electron-app/</code> — nie uzywac jej do liczenia</p>
-<p>razem z telefonami, bo nie zna dziennika operacji (<code>ops</code>) i moze nadpisac prace innych.</p>
+<p>Ta wersja żyje dalej jako archiwum w <code>electron-app/</code>. Instalka z 6.06 nie zna</p>
+<p>dziennika operacji, więc nie wolno jej używać do liczenia równolegle z telefonami —</p>
+<p>od 6.08.2026 w folderze <code>INSTALACJA/</code> leży świeży .dmg zbudowany z aktualnego kodu.</p>
 </div>
 <div class="karta">
 <h3>Wersja Mac (Electron .dmg) — równolegle</h3>
@@ -164,10 +165,11 @@ color:var(--muted);font-size:12px}
 </div>
 <h2 class=sekcja>Dzień po dniu</h2>
 <p class=sub>Pełny ślad z gita — każda zmiana, jaka weszła do aplikacji. Kliknij dzień, żeby rozwinąć.</p>
-<details><summary>2026-08-06 <span class=lc>· 3 zmian</span></summary>
+<details><summary>2026-08-06 <span class=lc>· 4 zmian</span></summary>
 <div class=commit><span class=h>5c0350c</span><span>fix: koniec wracania starych danych i przeladowan w trakcie logowania (SW v15)</span></div>
 <div class=commit><span class=h>0642a05</span><span>v1.1 (build 21): wersja stabilna — synchronizacja, brak przeladowan, RLS w bazie</span></div>
 <div class=commit><span class=h>6a8210e</span><span>v1.2 (build 22): desktop jako PWA (offline + instalacja) i offline z podpisem osoby</span></div>
+<div class=commit><span class=h>25f6235</span><span>feat: kafelek Historia wersji — strona generowana z CHANGELOG i historii gita (gen-historia.py)</span></div>
 </details>
 <details><summary>2026-07-11 <span class=lc>· 4 zmian</span></summary>
 <div class=commit><span class=h>380845a</span><span>feat: kieliszek wina 100ml/10zł (=2 degustacje) — kafelek, koszyk, log, live sync, cofanie</span></div>
