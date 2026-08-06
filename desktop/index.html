@@ -379,7 +379,7 @@ function sbLoadData() {
   ]).then(function(res) {
     var snapRes = res[0], winesRes = res[1], daysRes = res[2];
     var snap = snapRes && snapRes.data && snapRes.data.data;
-    if (snap && (snap._opTs||0) >= (S._opTs||0)) {
+    if (snap && (snap._opTs||0) > (S._opTs||0)) {
       try { localStorage.setItem('sw_v3', JSON.stringify(snap)); } catch(e){}
       load();
       if (snap._totalGlasses) { TOTAL_GLASSES = snap._totalGlasses; localStorage.setItem('sw_total_glasses', TOTAL_GLASSES); }
@@ -575,7 +575,7 @@ function applyRemoteOp(e){
   if (e.type==='sync-full'){
     _sb.from('live_state').select('data').eq('user_email','shared').maybeSingle().then(function(r){
       var d = r && r.data && r.data.data;
-      if (d && (d._opTs||0) >= (S._opTs||0)) sbAdoptSnapshot(d);
+      if (d && (d._opTs||0) > (S._opTs||0)) sbAdoptSnapshot(d);
     });
     return;
   }
@@ -897,7 +897,10 @@ function save() {
 
 function sbPushLive() {
   if (!_sb || !SB_USER) return;
-  S._opTs = SB_LASTOP || Date.now();
+  // Znacznik wersji snapshotu: zawsze rosnacy zegar, nie ts ostatniej operacji.
+  // SB_LASTOP stoi w miejscu, gdy nikt nic nie klika — wtedy kazdy snapshot mial
+  // ten sam _opTs i urzadzenia w kolko przyjmowaly stary stan (stare dane wracaly).
+  S._opTs = Math.max(Date.now(), (S._opTs || 0) + 1);
   S._totalGlasses = TOTAL_GLASSES;
   _sb.from('live_state').upsert({
     user_email: 'shared',
