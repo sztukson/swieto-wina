@@ -31,6 +31,13 @@ h2.sekcja{font-family:Georgia,serif;font-size:22px;color:var(--gold);font-weight
 margin:40px 0 8px;border-top:1px solid var(--border);padding-top:26px}
 details{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);
 padding:11px 15px;margin:8px 0}
+details.karta{padding:14px 18px;margin:0 0 10px;border-radius:var(--r)}
+details.karta summary{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:15px}
+details.karta .wname{font-family:Georgia,serif;font-size:18px;color:var(--gold);font-weight:400}
+details.karta .wdata{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+details.karta[open] .tresc{border-top:1px solid var(--border);margin-top:12px;padding-top:12px}
+details.karta p.lead{color:var(--text);font-size:14px;margin:0 0 6px}
+details.karta:hover{border-color:var(--gold2)}
 summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--text);outline:none}
 summary::marker{color:var(--gold)}
 details .lc{color:var(--muted);font-weight:400;font-size:12.5px}
@@ -52,15 +59,17 @@ color:var(--muted);font-size:12px}
 <h1>🍷 Historia Święta Wina</h1>
 <div class=sub>Jak ta aplikacja powstawała — wersja po wersji, od pierwszego dnia do dziś. Aktualnie: <strong>v1.2 (build 22)</strong></div>
 <div class=stat>
-<div><b>47</b><span>zmian w kodzie</span></div>
+<div><b>48</b><span>zmian w kodzie</span></div>
 <div><b>6</b><span>dni pracy</span></div>
 <div><b>5</b><span>opisanych wersji</span></div>
 <div><b>2026-06-06</b><span>pierwszy commit</span></div>
 </div>
 <h2 class=sekcja>Wersje</h2>
-<div class="karta teraz">
-<h3>v1.2 (build 22) — offline na komputerze + wiadomo, kto liczył</h3>
-<div class=data>2026-08-06 <span class=pill>tag v1.2</span><span class=pill>aktualna</span></div>
+<p class=sub>Kliknij wersję, żeby rozwinąć szczegóły.</p>
+<details class="karta teraz">
+<summary><span class=wname>v1.2 (build 22)</span><span class=wdata>2026-08-06</span><span class=pill>tag v1.2</span><span class=pill>aktualna</span></summary>
+<div class=tresc>
+<p class=lead>offline na komputerze + wiadomo, kto liczył</p>
 <p><strong>Wersja komputerowa działa teraz offline i da się ją zainstalować.</strong> Wcześniej</p>
 <p><code>/desktop/</code> była jedyną wersją bez service workera i manifestu — czyli bez</p>
 <p>internetu nie otwierała się w ogóle. Teraz w Chrome można kliknąć „Zainstaluj&quot;</p>
@@ -84,10 +93,11 @@ color:var(--muted);font-size:12px}
 </ul>
 <p>Bezpieczeństwo bez zmian: prawdziwą bramą jest RLS w bazie, więc operacje osoby</p>
 <p>usuniętej z listy dostępu zostaną odrzucone przy synchronizacji.</p>
-</div>
-<div class="karta">
-<h3>v1.1 (build 21) — wersja stabilna po naprawie synchronizacji i bezpieczeństwa</h3>
-<div class=data>2026-08-06 <span class=pill>tag v1.1</span></div>
+</div></details>
+<details class="karta">
+<summary><span class=wname>v1.1 (build 21)</span><span class=wdata>2026-08-06</span><span class=pill>tag v1.1</span></summary>
+<div class=tresc>
+<p class=lead>wersja stabilna po naprawie synchronizacji i bezpieczeństwa</p>
 <p><strong>Pierwsza oznaczona wersja działająca (tag <code>v1.1</code>).</strong> Sprawdzone: 5 dni w archiwum,</p>
 <p>1317 operacji w logu, RLS na wszystkich 5 tabelach, Advisor bez błędów.</p>
 <h4>Naprawione</h4>
@@ -118,10 +128,11 @@ color:var(--muted);font-size:12px}
 <li>Korekta magazynu: podgląd −N butelek, powód „pomyłka&quot; jako domyślny</li>
 <li>Kieliszek w wyborze na kafelku (tablet i telefon)</li>
 </ul>
-</div>
-<div class="karta">
-<h3>v1.0 (build 20) — pierwsza wersja telefon/tablet (PWA)</h3>
-<div class=data>2026-06-06 </div>
+</div></details>
+<details class="karta">
+<summary><span class=wname>v1.0 (build 20)</span><span class=wdata>2026-06-06</span></summary>
+<div class=tresc>
+<p class=lead>pierwsza wersja telefon/tablet (PWA)</p>
 <ul>
 <li>Model sprzedaży <strong>kafelki</strong>: wino → rodzaj (degustacja/butelka) → płatność (gotówka/karta/BLIK) → rabat (tylko butelka: −5%/−10%/własny %/zł)</li>
 <li>Kafelki równe, pełne nazwy (zawijanie bez obcinania), kolory wg koloru wina</li>
@@ -133,10 +144,11 @@ color:var(--muted);font-size:12px}
 <li>PWA: offline (service worker), instalacja na ekranie głównym, tryb dzień/noc, auto-reload przy aktualizacji</li>
 <li>Hosting: GitHub Pages — https://sztukson.github.io/swieto-wina/</li>
 </ul>
-</div>
-<div class="karta">
-<h3>Wersja 0 (przed repozytorium) — maj 2026 — apka na Maca (Electron)</h3>
-<div class=data> </div>
+</div></details>
+<details class="karta">
+<summary><span class=wname>Wersja 0 (przed repozytorium)</span><span class=wdata>maj 2026</span></summary>
+<div class=tresc>
+<p class=lead>apka na Maca (Electron)</p>
 <p>Punkt startowy: aplikacja <strong>zainstalowana lokalnie na Macu</strong> (Electron, plik .dmg),</p>
 <p>budowana przed pierwszym festiwalem. Miała pełne liczenie kasy z banknotami</p>
 <p>i działała bez internetu, ale była tylko na jednym komputerze — zero synchronizacji</p>
@@ -153,23 +165,24 @@ color:var(--muted);font-size:12px}
 <p>Ta wersja żyje dalej jako archiwum w <code>electron-app/</code>. Instalka z 6.06 nie zna</p>
 <p>dziennika operacji, więc nie wolno jej używać do liczenia równolegle z telefonami —</p>
 <p>od 6.08.2026 w folderze <code>INSTALACJA/</code> leży świeży .dmg zbudowany z aktualnego kodu.</p>
-</div>
-<div class="karta">
-<h3>Wersja Mac (Electron .dmg) — równolegle</h3>
-<div class=data> </div>
+</div></details>
+<details class="karta">
+<summary><span class=wname>Wersja Mac (Electron .dmg) — równolegle</span><span class=wdata></span></summary>
+<div class=tresc>
 <ul>
 <li>Pełna apka z liczeniem banknotów (Kasa), dla głównych stanowisk</li>
 <li>Dostała dodawanie/usuwanie win (build 20)</li>
 <li>Ta sama baza Supabase co PWA</li>
 </ul>
-</div>
+</div></details>
 <h2 class=sekcja>Dzień po dniu</h2>
 <p class=sub>Pełny ślad z gita — każda zmiana, jaka weszła do aplikacji. Kliknij dzień, żeby rozwinąć.</p>
-<details><summary>2026-08-06 <span class=lc>· 4 zmian</span></summary>
+<details><summary>2026-08-06 <span class=lc>· 5 zmian</span></summary>
 <div class=commit><span class=h>5c0350c</span><span>fix: koniec wracania starych danych i przeladowan w trakcie logowania (SW v15)</span></div>
 <div class=commit><span class=h>0642a05</span><span>v1.1 (build 21): wersja stabilna — synchronizacja, brak przeladowan, RLS w bazie</span></div>
 <div class=commit><span class=h>6a8210e</span><span>v1.2 (build 22): desktop jako PWA (offline + instalacja) i offline z podpisem osoby</span></div>
 <div class=commit><span class=h>25f6235</span><span>feat: kafelek Historia wersji — strona generowana z CHANGELOG i historii gita (gen-historia.py)</span></div>
+<div class=commit><span class=h>c5e2fe1</span><span>docs: poprawna polszczyzna w opisach wersji + odswiezona historia.html</span></div>
 </details>
 <details><summary>2026-07-11 <span class=lc>· 4 zmian</span></summary>
 <div class=commit><span class=h>380845a</span><span>feat: kieliszek wina 100ml/10zł (=2 degustacje) — kafelek, koszyk, log, live sync, cofanie</span></div>

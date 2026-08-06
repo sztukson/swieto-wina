@@ -125,6 +125,13 @@ h2.sekcja{font-family:Georgia,serif;font-size:22px;color:var(--gold);font-weight
 margin:40px 0 8px;border-top:1px solid var(--border);padding-top:26px}
 details{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);
 padding:11px 15px;margin:8px 0}
+details.karta{padding:14px 18px;margin:0 0 10px;border-radius:var(--r)}
+details.karta summary{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:15px}
+details.karta .wname{font-family:Georgia,serif;font-size:18px;color:var(--gold);font-weight:400}
+details.karta .wdata{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+details.karta[open] .tresc{border-top:1px solid var(--border);margin-top:12px;padding-top:12px}
+details.karta p.lead{color:var(--text);font-size:14px;margin:0 0 6px}
+details.karta:hover{border-color:var(--gold2)}
 summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--text);outline:none}
 summary::marker{color:var(--gold)}
 details .lc{color:var(--muted);font-weight:400;font-size:12.5px}
@@ -159,6 +166,7 @@ parts = [
     f"<div><b>{commits[0][0] if commits else '—'}</b><span>pierwszy commit</span></div>",
     "</div>",
     '<h2 class=sekcja>Wersje</h2>',
+    '<p class=sub>Kliknij wersję, żeby rozwinąć szczegóły.</p>',
 ]
 
 for i, (head, body) in enumerate(wersje):
@@ -166,17 +174,26 @@ for i, (head, body) in enumerate(wersje):
     if m:
         nazwa, data, opis = m.group(1).strip(), m.group(2), m.group(3)
     else:
-        nazwa, data, opis = head, "", ""
-    tag_info = ""
+        m2 = re.match(r"^(.+?)—\s*(maj 2026|[\d-]+)\s*—?\s*(.*)$", head)
+        if m2:
+            nazwa, data, opis = m2.group(1).strip(), m2.group(2), m2.group(3)
+        else:
+            nazwa, data, opis = head, "", ""
     tag_name = nazwa.split()[0]
+    pills = ""
     if tag_name in tags:
-        tag_info = f'<span class=pill>tag {html.escape(tag_name)}</span>'
-    parts.append(f'<div class="karta{" teraz" if i == 0 else ""}">')
-    parts.append(f"<h3>{html.escape(nazwa)}{' — ' + html.escape(opis) if opis else ''}</h3>")
-    parts.append(f'<div class=data>{html.escape(data)} {tag_info}'
-                 f'{"<span class=pill>aktualna</span>" if i == 0 else ""}</div>')
+        pills += f'<span class=pill>tag {html.escape(tag_name)}</span>'
+    if i == 0:
+        pills += "<span class=pill>aktualna</span>"
+    # zwijane: w zamkniętym stanie widać tylko nazwę i datę
+    parts.append(f'<details class="karta{" teraz" if i == 0 else ""}">')
+    parts.append(f'<summary><span class=wname>{html.escape(nazwa)}</span>'
+                 f'<span class=wdata>{html.escape(data)}</span>{pills}</summary>')
+    parts.append('<div class=tresc>')
+    if opis:
+        parts.append(f'<p class=lead>{md(opis)}</p>')
     parts.append(render_body(body))
-    parts.append("</div>")
+    parts.append("</div></details>")
 
 parts.append('<h2 class=sekcja>Dzień po dniu</h2>')
 parts.append('<p class=sub>Pełny ślad z gita — każda zmiana, jaka weszła do aplikacji. '
